@@ -1,0 +1,29 @@
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: var(--color1);
+
+	padding: 2rem 4rem;
+	box-shadow: 0 4px 4px color-mix(in oklch, var(--color1) 20%, transparent);
+}
+
+.logo {
+	font-size: 20px;
+	color: white;
+}
+
+.menu {
+	display: flex;
+	align-items: center;
+	gap: 2rem;
+	&__item {
+		color: white;
+		font-size: 1.8rem;
+		border: 2px solid transparent;
+
+		&.active {
+			border-bottom: 2px solid white;
+		}
+	}
+}

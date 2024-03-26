@@ -1,0 +1,35 @@
+.login {
+	background: linear-gradient(45deg, #4e588e, #375062, #2c6059);
+	position: relative;
+	height: 100%;
+}
+.login-form {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	translate: -50% -50%;
+	width: 350px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 20px;
+	background-color: rgba(white, 0.6);
+	backdrop-filter: blur(20px);
+	border-radius: 3px;
+	align-items: center;
+	&__input {
+		background-color: transparent;
+		width: 100%;
+		border: 0;
+		line-height: 1.6em;
+		font-size: 2rem;
+		padding: 0.1em 0.5em;
+		box-shadow: inset 0 0 10px rgba(black, 0.2);
+		background-color: color-mix(in srgb, var(--color1) 10%, transparent);
+	}
+
+	&__submit-btn {
+		margin-top: 1em;
+		align-self: flex-end;
+	}
+}
