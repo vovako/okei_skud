@@ -1,9 +1,9 @@
 .header {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	background-color: var(--color1);
-
+	gap: 20px;
+	justify-content: space-between;
 	padding: 2rem 4rem;
 	box-shadow: 0 4px 4px color-mix(in oklch, var(--color1) 20%, transparent);
 }
@@ -16,7 +16,7 @@
 .menu {
 	display: flex;
 	align-items: center;
-	gap: 2rem;
+	gap: 1rem;
 	&__item {
 		color: white;
 		font-size: 1.8rem;
@@ -25,5 +25,46 @@
 		&.active {
 			border-bottom: 2px solid white;
 		}
+	}
+}
+
+.profile {
+	position: relative;
+
+	&__open-btn {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 2rem;
+		padding-left: 1rem;
+
+		&:hover {
+			background-color: rgba(black, 0.3);
+		}
+	}
+	&__name {
+		color: white;
+	}
+	&__details {
+		height: 2em;
+	}
+
+	&__popup {
+		position: absolute;
+		bottom: 0;
+		right: 0;
+		translate: 0 100%;
+		background-color: black;
+		display: none;
+
+		&.active {
+			display: block;
+		}
+	}
+	&__popup-btn {
+		font-size: 1.6rem;
+		line-height: 2rem;
+		color: white;
+		padding: 1rem 2rem;
 	}
 }
