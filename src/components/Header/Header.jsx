@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import './header.scss'
 
 function Header() {
+	const location = useLocation()
+
+	useEffect(() => {
+		console.log(location.pathname);
+	}, [location])
+
 	return (
 		<header className="header">
 			<div className="logo">ОКЭИ СКУД</div>
 			<div className="menu">
-				<a href="./" className="menu__item active">Главная</a>
-				<a href="./students.html" className="menu__item">Студенты</a>
+				<Link to='/main' className={`menu__item ${location.pathname === '/main' ? 'active' : ''}`}>Главная</Link>
+				<Link to='/users' className={`menu__item ${location.pathname === '/users' ? 'active' : ''}`}>Студенты</Link>
 			</div>
 		</header>
 	);

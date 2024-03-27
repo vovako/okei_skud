@@ -1,12 +1,12 @@
 import React from 'react';
 import Header from '../Header/Header';
-import './main-page.scss'
+import './users-page.scss'
 
-function MainPage() {
+function UsersPage() {
 	return (
 		<>
 			<Header />
-			<div className="main-page">
+			<div className="users-page">
 				<div class="block today-block">
 					<div class="block__header">Сегодня</div>
 					<div class="block__content">
@@ -35,4 +35,4 @@ function MainPage() {
 	);
 }
 
-export default MainPage;
+export default UsersPage;

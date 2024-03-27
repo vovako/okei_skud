@@ -16,7 +16,10 @@
 	background-color: rgba(white, 0.6);
 	backdrop-filter: blur(20px);
 	border-radius: 3px;
-	align-items: center;
+
+	&__title {
+		font-size: 2rem;
+	}
 	&__input {
 		background-color: transparent;
 		width: 100%;
@@ -28,8 +31,9 @@
 		background-color: color-mix(in srgb, var(--color1) 10%, transparent);
 	}
 
-	&__submit-btn {
+	&__footer {
 		margin-top: 1em;
-		align-self: flex-end;
+		display: flex;
+		justify-content: space-between;
 	}
 }

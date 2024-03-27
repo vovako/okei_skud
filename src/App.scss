@@ -1,3 +1,119 @@
 #root {
 	height: 100%;
 }
+
+html {
+	font-size: 10px;
+	font-family: "Montserrat";
+
+	&::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background-color: var(--bg);
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background-color: var(--color1);
+		border: 2px solid var(--bg);
+		border-radius: 99px;
+	}
+}
+
+::selection {
+	background-color: rgba(green, 0.3);
+}
+
+body {
+	background-color: var(--bg);
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.container {
+	padding: 0 30px;
+	margin: 0 auto;
+}
+
+.btn {
+	padding: 0.8rem 1.6rem;
+	border-radius: 5px;
+	box-shadow: 0 2px 4px rgba(black, 0.3);
+	background-color: var(--color3);
+	color: white;
+	font-size: 1.8rem;
+	&:hover {
+		opacity: 0.8;
+	}
+}
+.link-btn {
+	font-size: 1.8rem;
+	color: rgb(55, 55, 55);
+	// text-shadow: 0 2px 4px rgba(black, 0.3);
+}
+
+.block {
+	box-shadow: 0 2px 4px rgba(black, 0.25);
+	background-color: #fff;
+	&__header {
+		padding: 1rem 1rem;
+		font-size: 1.8rem;
+		border-bottom: 1px solid var(--color2);
+	}
+
+	&__content {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1.4rem;
+	}
+}
+
+.title {
+	font-size: 1.8rem;
+	font-weight: 600;
+}
+
+.circle-bar {
+	@property --progress-value {
+		syntax: "<integer>";
+		// inherits: false;
+		initial-value: 0;
+	}
+	--width: 100;
+	--stroke-width: 18;
+	--stroke-color: var(--color3);
+
+	&__descr {
+		font-size: 1.6rem;
+		text-align: center;
+		margin-bottom: 0.3em;
+	}
+
+	&__body {
+		width: calc(var(--width) * 1px);
+		aspect-ratio: 1;
+		border-radius: 50%;
+
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		background: radial-gradient(
+				closest-side,
+				white calc(100% - var(--stroke-width) / var(--width) * 100%),
+				transparent calc(100% - var(--stroke-width) / var(--width) * 100%) 100%
+			),
+			conic-gradient(var(--stroke-color) calc(var(--progress-value) * 1%), #e8e8e8 0);
+
+		&::before {
+			counter-reset: value var(--progress-value);
+			content: counter(value);
+			font-size: 32px;
+			color: var(--stroke-color);
+			font-weight: 600;
+		}
+	}
+}
