@@ -1,0 +1,114 @@
+.users-page {
+	flex: 1;
+	display: flex;
+	padding: 30px;
+	gap: 20px;
+	&__body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+
+		.wrapper {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+			flex: 1 1 auto;
+		}
+	}
+	&__properties {
+		flex: 0 0 380px;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+}
+
+.users-block {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	.block__content {
+		flex: 1;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 20px;
+	}
+
+	.users-search-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		&__search {
+			width: 100%;
+			padding: 0;
+
+			input {
+				line-height: 2em;
+				font-size: 1.6rem;
+				padding: 0 10px;
+				width: 100%;
+			}
+		}
+
+		&__filter {
+		}
+	}
+	.users-filter {
+		&__btn {
+		}
+
+		&__popup {
+		}
+	}
+	.users-list {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		&__actions {
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+		}
+
+		&__list {
+			flex: 1 1 auto;
+			height: 0;
+			overflow: auto;
+			padding: 4px;
+			padding-right: 10px;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		&__item {
+			font-size: 1.5rem;
+			padding: 2px 10px;
+			box-shadow: 0 0 4px rgba(black, 0.3);
+			user-select: none;
+			cursor: pointer;
+
+			&.active {
+				background-color: #b8ffd7;
+				cursor: default;
+			}
+		}
+	}
+}
+
+.info-per-day,
+.comes-block {
+	flex: 1 1 auto;
+	.block__content {
+		&:empty {
+			&::after {
+				content: "Студент не выбран";
+				font-size: 2rem;
+				color: rgba(black, 0.7);
+			}
+		}
+	}
+}

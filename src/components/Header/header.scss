@@ -56,15 +56,20 @@
 		translate: 0 100%;
 		background-color: black;
 		display: none;
-
-		&.active {
-			display: block;
-		}
 	}
 	&__popup-btn {
 		font-size: 1.6rem;
 		line-height: 2rem;
 		color: white;
 		padding: 1rem 2rem;
+	}
+
+	&.active {
+		.profile__details {
+			rotate: 180deg;
+		}
+		.profile__popup {
+			display: block;
+		}
 	}
 }

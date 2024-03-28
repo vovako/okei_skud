@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './header.scss'
 import arrowDown from '/src/assets/arrow.svg'
@@ -22,15 +22,15 @@ function Header() {
 		<header className="header">
 			<div className="logo">ОКЭИ СКУД</div>
 			<div className="menu">
-				<Link to='/main' className={`menu__item ${location.pathname === '/main' ? 'active' : ''}`}>Главная</Link>
+				<Link to='/' className={`menu__item ${location.pathname === '/' ? 'active' : ''}`}>Главная</Link>
 				<Link to='/users' className={`menu__item ${location.pathname === '/users' ? 'active' : ''}`}>Студенты</Link>
 			</div>
-			<div className="profile">
+			<div className={`profile ${detailsIsOpened ? 'active' : ''}`}>
 				<button onClick={onClickDetailsBtn} className="profile__open-btn">
 					<div className="profile__name">{userName}</div>
 					<img src={arrowDown} alt="" className="profile__details" />
 				</button>
-				<div className={`profile__popup ${detailsIsOpened ? 'active' : ''}`}>
+				<div className="profile__popup">
 					<button onClick={onClickExitBtn} className="profile__popup-btn">Выйти</button>
 				</div>
 			</div>

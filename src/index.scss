@@ -38,6 +38,28 @@
 	--color5: #4ae059;
 }
 
+html {
+	font-size: 10px;
+	font-family: "Montserrat";
+	::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	::-webkit-scrollbar-track {
+		background-color: var(--bg);
+	}
+
+	::-webkit-scrollbar-thumb {
+		background-color: var(--color1);
+		border: 2px solid var(--bg);
+		border-radius: 99px;
+	}
+}
+
+::selection {
+	background-color: rgba(green, 0.3);
+}
+
 * {
 	margin: 0;
 	padding: 0;
@@ -73,5 +95,3 @@ button {
 a {
 	text-decoration: none;
 }
-
-

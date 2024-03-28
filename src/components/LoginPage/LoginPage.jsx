@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import './login-page.scss'
 
-function LoginPage() {
+function LoginPage({ setSessionIsActive }) {
 	const [isRegActive, setIsRegActive] = useState(false);
 	const [loginValue, setLoginValue] = useState('');
 	const [passValue, setPassValue] = useState('');
 	const [notice, setNotice] = useState('');
-
-	const navigate = useNavigate()
 
 	function switchMode() {
 		setIsRegActive(!isRegActive)
@@ -37,33 +34,11 @@ function LoginPage() {
 					setNotice(json.error)
 					return
 				}
-				localStorage.setItem('session', json.data)
-				localStorage.setItem('user-info', json.data)
-				navigate('/main', { replace: false })
+				localStorage.setItem('session', json.data.SessionId)
+				localStorage.setItem('user-info', json.data.Username)
+				setSessionIsActive(true)
 			})
 	}
-
-
-	useEffect(() => {
-		const session = localStorage.getItem('session')
-		if (session === null) return
-
-		fetch(`${localStorage.getItem('origin')}/login`, {
-			method: 'post',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': session
-			},
-			body: JSON.stringify({})
-		})
-			.then(res => res.json())
-			.then(json => {
-				if (json.error === null) {
-					localStorage.setItem('user-info', json.data)
-					navigate('/main', { replace: false })
-				}
-			})
-	}, [])
 
 	return (
 		<div className="login">
@@ -71,8 +46,8 @@ function LoginPage() {
 				{isRegActive && (
 					<>
 						<div className="login-form__title">Регистрация</div>
-						<input value={loginValue} onChange={(evt) => setLoginValue(evt.target.value)} type="text" className="login-form__input" placeholder='Логин' />
-						<input value={passValue} onChange={(evt) => setPassValue(evt.target.value)} type="password" className="login-form__input" placeholder='Пароль' />
+						<input value={loginValue} onChange={(evt) => setLoginValue(evt.target.value)} type="text" className="login-form__input" autoComplete="username" placeholder='Логин' />
+						<input value={passValue} onChange={(evt) => setPassValue(evt.target.value)} type="password" className="login-form__input" autoComplete="password" placeholder='Пароль' />
 						<div className="login-form__notice">{notice}</div>
 						<div className="login-form__footer">
 							<button onClick={switchMode} className="link-btn">Вход</button>
@@ -83,8 +58,8 @@ function LoginPage() {
 				{!isRegActive && (
 					<>
 						<div className="login-form__title">Вход</div>
-						<input value={loginValue} onChange={(evt) => setLoginValue(evt.target.value)} type="text" className="login-form__input" placeholder='Логин' />
-						<input value={passValue} onChange={(evt) => setPassValue(evt.target.value)} type="password" className="login-form__input" placeholder='Пароль' />
+						<input value={loginValue} onChange={(evt) => setLoginValue(evt.target.value)} type="text" className="login-form__input" autoComplete="username" placeholder='Логин' />
+						<input value={passValue} onChange={(evt) => setPassValue(evt.target.value)} type="password" className="login-form__input" autoComplete="password" placeholder='Пароль' />
 						<div className="login-form__notice">{notice}</div>
 						<div className="login-form__footer">
 							<button onClick={switchMode} className="link-btn">Регистрация</button>
