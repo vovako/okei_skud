@@ -43,12 +43,27 @@
 		&__search {
 			width: 100%;
 			padding: 0;
+			border: 1px solid gray;
 
 			input {
 				line-height: 2em;
 				font-size: 1.6rem;
 				padding: 0 10px;
 				width: 100%;
+				border: 0;
+			}
+		}
+
+		.loading {
+			width: 40px;
+			aspect-ratio: 1;
+			right: 5px;
+			top: 0;
+			pointer-events: none;
+			visibility: hidden;
+
+			&.active {
+				visibility: visible;
 			}
 		}
 

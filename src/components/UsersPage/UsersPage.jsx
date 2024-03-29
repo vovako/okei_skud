@@ -1,41 +1,102 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import Header from '../Header/Header';
 import './users-page.scss'
 import filterImg from '/src/assets/filter.svg'
+import PopupAddUser from './Popup';
+import loadingIcon from '/src/assets/loading.gif'
 
-
-function UsersPage() {
+function UsersPage({ onSessionExpired }) {
 	const [usersList, setUsersList] = useState([])
 	const [activeUserId, setActiveUserId] = useState(null)
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
 	const [searchValue, setSearchValue] = useState('')
-	const [addPopupOpened, setAddPopupOpened] = useState(true)
+	const [groupList, setGroupList] = useState([])
+	const [isLoading, setIsLoading] = useState(false)
+
+	const refAddPopup = useRef(null)
+	const searchTimeout = useRef({})
 
 	useMemo(() => {
 		loadUsers(0, 20)
+		loadGroup()
 	}, [])
 
-	async function loadUsers(start, count) {
-		const res = await fetch(`${localStorage.getItem('origin')}/api/persons/filter/${start}/${count}`, {
+	function loadUsers(start, count, filterProps = []) {
+		setIsLoading(true)
+		fetch(`${localStorage.getItem('origin')}/api/persons/filter/${start}/${count}`, {
 			method: 'post',
 			headers: {
 				'Content-Type': 'application/json',
 				'Authorization': localStorage.getItem('session')
 			},
-			body: JSON.stringify([])
+			body: JSON.stringify(filterProps)
 		})
-		const json = await res.json()
-		if (json.error) {
-			console.warn(json.error)
-			return null
-		}
-		setUsersList(json.data)
+			.then(res => res.json())
+			.then(json => {
+				if (json.error) {
+					console.warn(json.error)
+					if (json.error === 'сессия пользователя не действительна') {
+						onSessionExpired()
+					}
+				}
+				addUsersInUsersList(json.data)
+			})
+			.finally(() => {
+				setIsLoading(false)
+			})
+	}
+
+	function loadGroup() {
+		fetch(`${localStorage.getItem('origin')}/api/persons/departments`, {
+			headers: {
+				'Authorization': localStorage.getItem('session')
+			},
+		})
+			.then(res => res.json())
+			.then(json => {
+				if (json.error) {
+					console.warn(json.error)
+					if (json.error === 'сессия пользователя не действительна') {
+						onSessionExpired()
+					}
+				}
+				setGroupList(json.data)
+			})
 	}
 
 	function onClickUser(id) {
 		setActiveUserId(id)
 		const user = usersList.filter(u => u.Id === id)[0]
 		setSelectedUserTitle(`${user.LastName} ${user.FirstName} ${user.MiddleName}`)
+	}
+
+	function onClickOpenAddUserPopup(evt) {
+		const sourceRect = evt.target.getBoundingClientRect()
+		refAddPopup.current.style.right = document.documentElement.clientWidth - sourceRect.right + 'px'
+		refAddPopup.current.style.top = sourceRect.top + 'px'
+		refAddPopup.current.classList.add('active')
+	}
+
+	function addUsersInUsersList(newData) {
+		if (newData === null) {
+			newData = []
+		}
+		const uniqueData = newData.filter(nd => [...usersList].filter(ul => ul.Id === nd.Id).length < 1)
+		setUsersList([...usersList, ...uniqueData])
+	}
+
+	function onChangeSearchInput(evt) {
+		setSearchValue(evt.target.value)
+		clearTimeout(searchTimeout.current)
+		searchTimeout.current = setTimeout(() => {
+
+			const params = [
+				`LastName=${evt.target.value}`
+			]
+			loadUsers(0, 20, params)
+
+		}, 400)
+
 	}
 
 	return (
@@ -61,11 +122,13 @@ function UsersPage() {
 					<div className="block users-block">
 						<div className="block__content">
 							<div className="users-search-row">
+								
 								<search className="users-search-row__search">
 									<input type="search" placeholder='Поиск по фамилии'
 										value={searchValue}
-										onChange={(evt) => setSearchValue(evt.target.value)} />
+										onChange={onChangeSearchInput} />
 								</search>
+								<img src={loadingIcon} alt="" className={`loading ${isLoading ? 'active' : ''}`} />
 								<div className="users-search-row__filter users-filter">
 									<button className="users-filter__btn btn btn_green"><img src={filterImg} alt="" /></button>
 									<div className="users-filter__popup"></div>
@@ -73,10 +136,10 @@ function UsersPage() {
 							</div>
 							<div className="users-list">
 								<div className="users-list__actions">
-									<button className="btn btn_green">Добавить</button>
+									<button onClick={onClickOpenAddUserPopup} className="btn btn_green">Добавить</button>
 								</div>
 								<div className="users-list__list">
-									{usersList.filter(user => user.LastName.toLowerCase().includes(searchValue.toLowerCase())).map((user) => (
+									{[...usersList].filter(user => user.LastName.toLowerCase().includes(searchValue.toLowerCase())).map(user => (
 										<div className={`users-list__item ${activeUserId === user.Id ? 'active' : ''}`}
 											onClick={() => onClickUser(user.Id)}
 											key={user.Id} >{user.LastName} {user.FirstName} {user.MiddleName}</div>
@@ -87,25 +150,7 @@ function UsersPage() {
 					</div>
 				</div>
 			</div >
-
-			<div className={`popup add-user-popup ${addPopupOpened ? 'active' : ''}`}>
-				<button onClick={() => setAddPopupOpened(false)} className="popup__close-btn">Закрыть</button>
-				<input type="text" className="popup__input input" placeholder='Фамилия' />
-				<input type="text" className="popup__input input" placeholder='Имя' />
-				<input type="text" className="popup__input input" placeholder='Отчество' />
-				<label>
-					<span>Группа</span>
-					<select>
-						<option value="">Все</option>
-						<option value="">4пк1</option>
-						<option value="">4пк2</option>
-					</select>
-				</label>
-				<div className="popup__footer">
-					<div className="popup__action-status access"></div>
-					<button className="btn btn_green">Добавить</button>
-				</div>
-			</div>
+			<PopupAddUser ref={refAddPopup} onSessionExpired={onSessionExpired} groupList={groupList} />
 		</>
 	);
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.scss'
 import LoginPage from './components/LoginPage/LoginPage'
@@ -10,40 +10,43 @@ function App() {
 
 	const [sessionIsActive, setSessionIsActive] = useState(false)
 
-
-	useEffect(() => {
-		const session = localStorage.getItem('session')
-		if (session !== null) {
-			setSessionIsActive(true)
-			return
+	function onSessionExpired() {
+		localStorage.removeItem('session')
+		localStorage.removeItem('user-info')
+		if (location.pathname !== '/') {
+			location.pathname = '/'
 		}
+	}
+
+	useMemo(() => {
+		const session = localStorage.getItem('session')
+		if (session === null) return 
+		
+		fetch(`${localStorage.getItem('origin')}/login`, {
+			method: 'post',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': session
+			},
+			body: JSON.stringify({})
+		})
+			.then(res => res.json())
+			.then(json => {
+				if (json.error !== null) {
+					onSessionExpired()
+					return
+				}
+				localStorage.setItem('user-info', json.data.Username)
+				setSessionIsActive(true)
+			})
 	}, [sessionIsActive])
-	// useMemo(() => {
-
-
-	// fetch(`${localStorage.getItem('origin')}/login`, {
-	// 	method: 'post',
-	// 	headers: {
-	// 		'Content-Type': 'application/json',
-	// 		'Authorization': session
-	// 	},
-	// 	body: JSON.stringify({})
-	// })
-	// 	.then(res => res.json())
-	// 	.then(json => {
-	// 		if (json.error === null) {
-	// 			localStorage.setItem('user-info', json.data.Username)
-	// 			setSessionIsActive(true)
-	// 		}
-	// 	})
-	// }, [])
 
 	return (
 		<BrowserRouter>
 			<Routes>
 				<Route path='/' element={sessionIsActive ? <MainPage /> : <LoginPage setSessionIsActive={setSessionIsActive} />} />
+				<Route path='/users' element={<UsersPage onSessionExpired={onSessionExpired} />} />
 				<Route path='*' element={<ErrorPage />} />
-				<Route path='/users' element={<UsersPage />} />
 			</Routes>
 		</BrowserRouter>
 	)

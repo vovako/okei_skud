@@ -117,7 +117,8 @@ body {
 	gap: 10px;
 	top: 0;
 	right: 0;
-	padding: 20px 10px;
+	padding: 15px;
+	padding-bottom: 30px;
 	display: none;
 	background-color: var(--bg);
 	box-shadow: 0 2px 20px rgba(black, 0.5);
@@ -139,6 +140,7 @@ body {
 		gap: 6px;
 		select {
 			font-size: 1.8rem;
+			padding: 3px 8px;
 		}
 	}
 
@@ -152,12 +154,20 @@ body {
 
 	&__action-status {
 		font-size: 1.6rem;
-		color: #007443;
 		padding: 0 1rem;
-		display: none;
-		&.access {
+		visibility: hidden;
+		&.success {
+			visibility: visible;
 			&::after {
-				content: 'Успешно';
+				content: "Успешно";
+				color: #007443;
+			}
+		}
+		&.failed {
+			visibility: visible;
+			&::after {
+				content: "Ошибка";
+				color: rgb(183, 0, 0);
 			}
 		}
 	}
