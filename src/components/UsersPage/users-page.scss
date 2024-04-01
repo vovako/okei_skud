@@ -71,10 +71,30 @@
 		}
 	}
 	.users-filter {
+		position: relative;
 		&__btn {
 		}
 
 		&__popup {
+		}
+
+		&__label {
+			position: absolute;
+			right: -9px;
+			top: -9px;
+			background-color: black;
+			color: white;
+			aspect-ratio: 1;
+			height: 1.4em;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 50%;
+			font-size: 1.8rem;
+
+			&:empty {
+				display: none;
+			}
 		}
 	}
 	.users-list {
@@ -97,6 +117,14 @@
 			display: flex;
 			flex-direction: column;
 			gap: 4px;
+
+			&:empty {
+				&::after {
+					content: "Ничего не найдено";
+					text-align: center;
+					font-size: 1.8rem;
+				}
+			}
 		}
 
 		&__item {
@@ -124,6 +152,51 @@
 				font-size: 2rem;
 				color: rgba(black, 0.7);
 			}
+		}
+	}
+}
+
+.comes-block {
+	.block__content {
+		gap: 30px;
+		align-items: flex-start;
+	}
+}
+
+.comes-grid {
+	&__title {
+		font-size: 3rem;
+		text-align: right;
+		padding-right: 20px;
+		color: gray;
+	}
+	&__body {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+	}
+	&__item {
+		font-size: 3rem;
+		color: gray;
+		text-align: center;
+		padding: 0.1em 0.3em;
+		background-color: rgba(black, 0.1);
+
+		&.head {
+			font-size: 2.5rem;
+			background-color: transparent;
+			padding-top: 4px;
+			padding-bottom: 4px;
+		}
+		&.old {
+			background-color: transparent;
+		}
+		&.present {
+			background-color: green;
+			color: white;
+		}
+		&.absent {
+			background-color: red;
+			color: white;
 		}
 	}
 }

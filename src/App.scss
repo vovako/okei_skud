@@ -171,6 +171,17 @@ body {
 			}
 		}
 	}
+
+	&__link-btn {
+		padding: 0 1rem;
+		visibility: hidden;
+		font-size: 1.6rem;
+
+		&.active {
+			visibility: visible;
+			color: gray;
+		}
+	}
 }
 .input {
 	line-height: 2em;
