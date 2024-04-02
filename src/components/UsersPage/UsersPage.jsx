@@ -20,6 +20,8 @@ function UsersPage({ onSessionExpired }) {
 	const [dayInfoIsLoading, setDayInfoIsLoading] = useState(false)
 	const [filterCount, setFilterCount] = useState(0)
 	const [filteredList, setFilteredList] = useState([])
+	const [prevMonthData, setPrevMonthData] = useState([])
+	const [curMonthData, setCurMonthData] = useState([])
 
 	const searchTimeout = useRef({})
 
@@ -27,8 +29,6 @@ function UsersPage({ onSessionExpired }) {
 		loadUsers(0, 30)
 		loadGroup()
 	}, [])
-
-
 
 	function loadUsers(start, count, filterProps = []) {
 		return new Promise(resolve => {
@@ -81,7 +81,26 @@ function UsersPage({ onSessionExpired }) {
 		const user = usersList.filter(u => u.Id === id)[0]
 		setSelectedUserTitle(`${user.LastName} ${user.FirstName} ${user.MiddleName}`)
 		setComesIsLoading(true)
-		setDayInfoIsLoading(true)
+
+		let comesLoadedMonths = 0
+
+		loadComesPerMonth(moment().month() + 1, id)
+			.then(data => {
+				setCurMonthData(data)
+				comesLoadedMonths += 1
+				if (comesLoadedMonths === 2) {
+					setComesIsLoading(false)
+				}
+			})
+
+		loadComesPerMonth(moment().month(), id)
+			.then(data => {
+				setPrevMonthData(data)
+				comesLoadedMonths += 1
+				if (comesLoadedMonths === 2) {
+					setComesIsLoading(false)
+				}
+			})
 	}
 
 	function onClickOpenAddUserPopup(evt) {
@@ -125,7 +144,7 @@ function UsersPage({ onSessionExpired }) {
 
 	function loadComesPerMonth(month, userId) {
 		return new Promise(resolve => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/departments`, {
+			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${month}/${userId}`, {
 				headers: {
 					'Authorization': localStorage.getItem('session')
 				},
@@ -154,10 +173,10 @@ function UsersPage({ onSessionExpired }) {
 						<div className="block comes-block">
 							<div className="block__header">Приходы</div>
 							<div className="block__content">
-								{!comesIsLoading && !activeUserId !== null && (
+								{!comesIsLoading && activeUserId !== null && (
 									<>
-										<MonthChart date={moment().month(moment().month() - 1)} />
-										<MonthChart date={moment()} />
+										<MonthChart date={moment().month(moment().month() - 1)} data={prevMonthData} />
+										<MonthChart date={moment()} data={curMonthData} />
 									</>
 								)}
 								{comesIsLoading && activeUserId !== null && (
@@ -168,6 +187,32 @@ function UsersPage({ onSessionExpired }) {
 						<div className="block info-per-day">
 							<div className="block__header">Информация за <span>{moment().format('DD.MM.YYYY')}</span></div>
 							<div className="block__content">
+								{!dayInfoIsLoading && activeUserId !== null && (
+									<Chart
+										chartType="Timeline"
+										chartLanguage='ru'
+										data={[
+											[
+												{ type: "string" },
+												{ type: "date" },
+												{ type: "date" }
+											],
+											["Внутри", new Date(2024, 3, 2, 6, 0, 0), new Date(2024, 3, 2, 10, 0, 0)],
+											["Снаружи", new Date(2024, 3, 2, 10, 0, 0), new Date(2024, 3, 2, 14, 0, 0)],
+											["Внутри", new Date(2024, 3, 2, 14, 0, 0), new Date(2024, 3, 2, 22, 0, 0)],
+										]}
+										width="100%"
+										height="100%"
+										options={{
+											hAxis: {
+												format: 'H:mm',
+											},
+											enableInteractivity: false,
+											alternatingRowStyle: false,
+											colors: ['#009300', '#e33838']
+										}}
+									/>
+								)}
 								{dayInfoIsLoading && activeUserId !== null && (
 									<img src={loadingIcon} alt="" className={`loading ${usersIsLoading ? 'active' : ''}`} />
 								)}
@@ -218,7 +263,7 @@ function UsersPage({ onSessionExpired }) {
 	);
 }
 
-function MonthChart({ date }) {
+function MonthChart({ date, data }) {
 	const monthTitle = date.format('MMMM')
 	const daysCount = +date.endOf('month').format('DD')
 	const prevMonthDaysCount = +date.startOf('month').format('d') - 1
@@ -248,9 +293,16 @@ function MonthChart({ date }) {
 				{Array.from({ length: prevMonthDaysCount }).map((_, i) => (
 					<div key={i} className="comes-grid__item old"></div>
 				))}
-				{Array.from({ length: daysCount }).map((_, i) => (
-					<div onClick={onSelectDay} key={i} className={`comes-grid__item ${curDay === i + 1 ? 'selected' : ''}`}>{i + 1}</div>
-				))}
+				{Array.from({ length: daysCount }).map((_, i) => {
+					const matchedDay = data.filter(d => +moment(d.Time).format('D') === i + 1)[0]
+
+					const additClasses = []
+					if (curDay === i + 1) additClasses.push('selected');
+					if (matchedDay.Coming > 0) additClasses.push('present');
+					if (matchedDay.Coming === 0) additClasses.push('absent');
+
+					return <div onClick={onSelectDay} key={i} className={`comes-grid__item ${additClasses.join(' ')}`}>{i + 1}</div>
+				})}
 			</div>
 		</div>
 	);
