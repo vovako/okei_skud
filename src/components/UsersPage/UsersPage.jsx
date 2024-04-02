@@ -22,6 +22,7 @@ function UsersPage({ onSessionExpired }) {
 	const [filteredList, setFilteredList] = useState([])
 	const [prevMonthData, setPrevMonthData] = useState([])
 	const [curMonthData, setCurMonthData] = useState([])
+	const [dayComesInfo, setDayComesInfo] = useState([])
 
 	const searchTimeout = useRef({})
 
@@ -101,6 +102,15 @@ function UsersPage({ onSessionExpired }) {
 					setComesIsLoading(false)
 				}
 			})
+
+		loadComesPerDay(moment().month(), moment().date(), id)
+			.then(data => {
+				setDayComesInfo(data)
+				console.log('====================================');
+				console.log(data);
+				console.log('====================================');
+				setDayInfoIsLoading(false)
+			})
 	}
 
 	function onClickOpenAddUserPopup(evt) {
@@ -145,6 +155,26 @@ function UsersPage({ onSessionExpired }) {
 	function loadComesPerMonth(month, userId) {
 		return new Promise(resolve => {
 			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${month}/${userId}`, {
+				headers: {
+					'Authorization': localStorage.getItem('session')
+				},
+			})
+				.then(res => res.json())
+				.then(json => {
+					if (json.error) {
+						console.warn(json.error)
+						if (json.error === 'сессия пользователя не действительна') {
+							onSessionExpired()
+						}
+					}
+					resolve(json.data)
+				})
+		})
+	}
+
+	function loadComesPerDay(month, day, userId) {
+		return new Promise(resolve => {
+			fetch(`${localStorage.getItem('origin')}/api/persons/activity/dayly/${userId}`, {
 				headers: {
 					'Authorization': localStorage.getItem('session')
 				},
