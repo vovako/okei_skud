@@ -29,7 +29,7 @@ body {
 	}
 
 	&_green {
-		background-color: #61ffbd;
+		background-color: var(--color6);
 		color: black;
 	}
 }
@@ -190,4 +190,8 @@ body {
 	border-radius: 3px;
 	border: 1px solid gray;
 	min-width: 200px;
+}
+
+.loading {
+	align-self: center;
 }

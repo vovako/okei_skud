@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.scss'
 import LoginPage from './components/LoginPage/LoginPage'
@@ -20,8 +20,8 @@ function App() {
 
 	useMemo(() => {
 		const session = localStorage.getItem('session')
-		if (session === null) return 
-		
+		if (session === null) return
+
 		fetch(`${localStorage.getItem('origin')}/login`, {
 			method: 'post',
 			headers: {
@@ -40,6 +40,16 @@ function App() {
 				setSessionIsActive(true)
 			})
 	}, [sessionIsActive])
+
+	useEffect(() => {
+		document.addEventListener('click', (evt) => {
+			const target = evt.target
+
+			if (!target.closest('.profile') && document.querySelector('.profile')) {
+				document.querySelector('.profile').classList.remove('active')
+			}
+		})
+	}, [])
 
 	return (
 		<BrowserRouter>

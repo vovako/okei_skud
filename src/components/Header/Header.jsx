@@ -6,10 +6,9 @@ import arrowDown from '/src/assets/arrow.svg'
 function Header() {
 	const location = useLocation()
 	const userName = localStorage.getItem('user-info')
-	const [detailsIsOpened, setDetailsIsOpened] = useState(false)
 
-	function onClickDetailsBtn() {
-		setDetailsIsOpened(!detailsIsOpened)
+	function onClickDetailsBtn(evt) {
+		evt.target.closest('.profile').classList.toggle('active')
 	}
 
 	function onClickExitBtn() {
@@ -25,7 +24,7 @@ function Header() {
 				<Link to='/' className={`menu__item ${location.pathname === '/' ? 'active' : ''}`}>Главная</Link>
 				<Link to='/users' className={`menu__item ${location.pathname === '/users' ? 'active' : ''}`}>Студенты</Link>
 			</div>
-			<div className={`profile ${detailsIsOpened ? 'active' : ''}`}>
+			<div className='profile'>
 				<button onClick={onClickDetailsBtn} className="profile__open-btn">
 					<div className="profile__name">{userName}</div>
 					<img src={arrowDown} alt="" className="profile__details" />
