@@ -148,10 +148,11 @@
 .comes-block {
 	flex: 1 1 auto;
 	.block__content {
+		font-size: 2rem;
+
 		&:empty {
 			&::after {
 				content: "Студент не выбран";
-				font-size: 2rem;
 				color: rgba(black, 0.7);
 				align-self: center;
 			}

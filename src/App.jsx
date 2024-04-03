@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.scss'
 import LoginPage from './components/LoginPage/LoginPage'
@@ -47,6 +47,14 @@ function App() {
 
 			if (!target.closest('.profile') && document.querySelector('.profile')) {
 				document.querySelector('.profile').classList.remove('active')
+			}
+			if (!target.closest('.popup') && document.querySelector('.popup.active')) {
+				if (!target.closest('#add-user-popup') && !target.classList.contains('users-list__add-btn')) {
+					document.querySelector('#add-user-popup').classList.remove('active')
+				}
+				if (!target.closest('#filter-popup') && !target.classList.contains('users-filter__btn')) {
+					document.querySelector('#filter-popup').classList.remove('active')
+				}
 			}
 		})
 	}, [])

@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
+import MonthChart from '../MonthChart/MonthChart'
 import Chart from 'react-google-charts'
 import Header from '../Header/Header'
 import './users-page.scss'
@@ -80,12 +81,14 @@ function UsersPage({ onSessionExpired }) {
 	function onClickUser(id) {
 		setActiveUserId(id)
 		const user = usersList.filter(u => u.Id === id)[0]
-		setSelectedUserTitle(`${user.LastName} ${user.FirstName} ${user.MiddleName}`)
+		const groupName = groupList.filter(g => g.Id === user.DepartmentId)[0]?.Name ?? 'Без группы'
+		setSelectedUserTitle(`${user.LastName} ${user.FirstName} ${user.MiddleName} ${groupName}`)
 		setComesIsLoading(true)
+		setDayInfoIsLoading(true)
 
 		let comesLoadedMonths = 0
 
-		loadComesPerMonth(moment().month() + 1, id)
+		loadComesPerMonth(moment(), id)
 			.then(data => {
 				setCurMonthData(data)
 				comesLoadedMonths += 1
@@ -94,7 +97,7 @@ function UsersPage({ onSessionExpired }) {
 				}
 			})
 
-		loadComesPerMonth(moment().month(), id)
+		loadComesPerMonth(moment().month(moment().month() - 1), id)
 			.then(data => {
 				setPrevMonthData(data)
 				comesLoadedMonths += 1
@@ -103,12 +106,29 @@ function UsersPage({ onSessionExpired }) {
 				}
 			})
 
-		loadComesPerDay(moment().month(), moment().date(), id)
+		loadComesPerDay(moment(), id)
 			.then(data => {
-				setDayComesInfo(data)
-				console.log('====================================');
-				console.log(data);
-				console.log('====================================');
+				let lastPoint = data[0] ?? null
+				const dataFormat = data.map(info => {
+					const label = info.Coming > 0 ? 'Внутри' : 'Снаружи'
+					if (data.length === 1) {
+						return [label, moment(info.Time).second(0).millisecond(0).toDate(), moment().second(0).millisecond(0).toDate()]
+					}
+					const result = [label, moment(lastPoint.Time).second(0).millisecond(0).toDate(), moment(info.Time).second(0).millisecond(0).toDate()]
+					lastPoint = info
+					return result
+				})
+				console.log('data', data)
+				console.log('format', dataFormat)
+
+				setDayComesInfo([
+					[
+						{ type: "string" },
+						{ type: "date" },
+						{ type: "date" }
+					],
+					...dataFormat
+				])
 				setDayInfoIsLoading(false)
 			})
 	}
@@ -152,9 +172,9 @@ function UsersPage({ onSessionExpired }) {
 
 	}
 
-	function loadComesPerMonth(month, userId) {
+	function loadComesPerMonth(date, userId) {
 		return new Promise(resolve => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${month}/${userId}`, {
+			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${date.format()}/${userId}`, {
 				headers: {
 					'Authorization': localStorage.getItem('session')
 				},
@@ -167,14 +187,14 @@ function UsersPage({ onSessionExpired }) {
 							onSessionExpired()
 						}
 					}
-					resolve(json.data)
+					resolve(json.data ?? [])
 				})
 		})
 	}
 
-	function loadComesPerDay(month, day, userId) {
+	function loadComesPerDay(date, userId) {
 		return new Promise(resolve => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/activity/dayly/${userId}`, {
+			fetch(`${localStorage.getItem('origin')}/api/persons/activity/dayly/${date.format()}/${userId}`, {
 				headers: {
 					'Authorization': localStorage.getItem('session')
 				},
@@ -187,7 +207,7 @@ function UsersPage({ onSessionExpired }) {
 							onSessionExpired()
 						}
 					}
-					resolve(json.data)
+					resolve(json.data ?? [])
 				})
 		})
 	}
@@ -197,8 +217,7 @@ function UsersPage({ onSessionExpired }) {
 			<Header />
 			<div className="users-page">
 				<div className="users-page__body">
-					<div className="title">Студент <span>{selectedUserTitle}{activeUserId !== null && ` (${groupList
-						.filter(g => g.Id === activeUserId)[0]?.Name ?? 'Без группы'})`}</span></div>
+					<div className="title">Студент <span>{selectedUserTitle}</span></div>
 					<div className='wrapper'>
 						<div className="block comes-block">
 							<div className="block__header">Приходы</div>
@@ -217,31 +236,24 @@ function UsersPage({ onSessionExpired }) {
 						<div className="block info-per-day">
 							<div className="block__header">Информация за <span>{moment().format('DD.MM.YYYY')}</span></div>
 							<div className="block__content">
-								{!dayInfoIsLoading && activeUserId !== null && (
+								{!dayInfoIsLoading && activeUserId !== null && dayComesInfo.length > 1 && (
 									<Chart
 										chartType="Timeline"
 										chartLanguage='ru'
-										data={[
-											[
-												{ type: "string" },
-												{ type: "date" },
-												{ type: "date" }
-											],
-											["Внутри", new Date(2024, 3, 2, 6, 0, 0), new Date(2024, 3, 2, 10, 0, 0)],
-											["Снаружи", new Date(2024, 3, 2, 10, 0, 0), new Date(2024, 3, 2, 14, 0, 0)],
-											["Внутри", new Date(2024, 3, 2, 14, 0, 0), new Date(2024, 3, 2, 22, 0, 0)],
-										]}
+										data={dayComesInfo}
 										width="100%"
 										height="100%"
 										options={{
 											hAxis: {
 												format: 'H:mm',
 											},
-											enableInteractivity: false,
 											alternatingRowStyle: false,
 											colors: ['#009300', '#e33838']
 										}}
 									/>
+								)}
+								{!dayInfoIsLoading && activeUserId !== null && dayComesInfo.length <= 1 && (
+									'Нет информации'
 								)}
 								{dayInfoIsLoading && activeUserId !== null && (
 									<img src={loadingIcon} alt="" className={`loading ${usersIsLoading ? 'active' : ''}`} />
@@ -273,7 +285,7 @@ function UsersPage({ onSessionExpired }) {
 							</div>
 							<div className="users-list">
 								<div className="users-list__actions">
-									<button onClick={onClickOpenAddUserPopup} className="btn btn_green">Добавить</button>
+									<button onClick={onClickOpenAddUserPopup} className="btn btn_green users-list__add-btn">Добавить</button>
 								</div>
 								<div className="users-list__list">
 									{[...usersList].filter(user => filterCount > 0 ? filteredList.includes(user.Id) : user.LastName.toLowerCase().includes(searchValue.toLowerCase())).map(user => (
@@ -290,51 +302,6 @@ function UsersPage({ onSessionExpired }) {
 			<PopupAddUser onSessionExpired={onSessionExpired} groupList={groupList} />
 			<PopupFilter groupList={groupList} loadUsers={loadUsers} setFilterCount={setFilterCount} filterCount={filterCount} setFilteredList={setFilteredList} />
 		</>
-	);
-}
-
-function MonthChart({ date, data }) {
-	const monthTitle = date.format('MMMM')
-	const daysCount = +date.endOf('month').format('DD')
-	const prevMonthDaysCount = +date.startOf('month').format('d') - 1
-	const curDay = moment().month() === date.month() ? moment().day() : 0
-
-	function onSelectDay(evt) {
-		if (!evt.target.classList.contains('selected')) {
-			document.querySelector('.comes-grid__item.selected').classList.remove('selected')
-			evt.target.classList.add('selected')
-			const curDate = moment(date)
-			curDate.date(+evt.target.textContent)
-			document.querySelector('.info-per-day .block__header span').textContent = curDate.format('DD.MM.YYYY')
-		}
-	}
-
-	return (
-		<div className="comes-grid">
-			<div className="comes-grid__title">{monthTitle}</div>
-			<div className="comes-grid__body">
-				<div className="comes-grid__item head">Пн</div>
-				<div className="comes-grid__item head">Вт</div>
-				<div className="comes-grid__item head">Ср</div>
-				<div className="comes-grid__item head">Чт</div>
-				<div className="comes-grid__item head">Пт</div>
-				<div className="comes-grid__item head">Сб</div>
-				<div className="comes-grid__item head">Вс</div>
-				{Array.from({ length: prevMonthDaysCount }).map((_, i) => (
-					<div key={i} className="comes-grid__item old"></div>
-				))}
-				{Array.from({ length: daysCount }).map((_, i) => {
-					const matchedDay = data.filter(d => +moment(d.Time).format('D') === i + 1)[0]
-
-					const additClasses = []
-					if (curDay === i + 1) additClasses.push('selected');
-					if (matchedDay.Coming > 0) additClasses.push('present');
-					if (matchedDay.Coming === 0) additClasses.push('absent');
-
-					return <div onClick={onSelectDay} key={i} className={`comes-grid__item ${additClasses.join(' ')}`}>{i + 1}</div>
-				})}
-			</div>
-		</div>
 	);
 }
 
