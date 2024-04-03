@@ -111,10 +111,10 @@ function UsersPage({ onSessionExpired }) {
 				const dataFormat = []
 				data.forEach((info, i) => {
 					const label = info.Coming > 0 ? 'Внутри' : 'Снаружи'
-					if (data.length === 1) {
+					if (data.length === 1 || i === data.length - 1) {
 						dataFormat.push([label, moment(info.Time).second(0).millisecond(0).toDate(), moment().second(0).millisecond(0).toDate()])
 					}
-					if (i < info.length - 1) {
+					if (i < data.length - 1) {
 						dataFormat.push([label, moment(info.Time).second(0).millisecond(0).toDate(), moment(data[i + 1].Time).second(0).millisecond(0).toDate()])
 					}
 				})
