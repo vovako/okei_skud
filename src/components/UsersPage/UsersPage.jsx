@@ -108,15 +108,15 @@ function UsersPage({ onSessionExpired }) {
 
 		loadComesPerDay(moment(), id)
 			.then(data => {
-				let lastPoint = data[0] ?? null
-				const dataFormat = data.map(info => {
+				const dataFormat = []
+				data.forEach((info, i) => {
 					const label = info.Coming > 0 ? 'Внутри' : 'Снаружи'
 					if (data.length === 1) {
-						return [label, moment(info.Time).second(0).millisecond(0).toDate(), moment().second(0).millisecond(0).toDate()]
+						dataFormat.push([label, moment(info.Time).second(0).millisecond(0).toDate(), moment().second(0).millisecond(0).toDate()])
 					}
-					const result = [label, moment(lastPoint.Time).second(0).millisecond(0).toDate(), moment(info.Time).second(0).millisecond(0).toDate()]
-					lastPoint = info
-					return result
+					if (i < info.length - 1) {
+						dataFormat.push([label, moment(info.Time).second(0).millisecond(0).toDate(), moment(data[i + 1].Time).second(0).millisecond(0).toDate()])
+					}
 				})
 				console.log('data', data)
 				console.log('format', dataFormat)

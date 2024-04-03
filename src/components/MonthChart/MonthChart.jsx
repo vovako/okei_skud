@@ -6,15 +6,14 @@ export default function MonthChart({ date, data }) {
 	const monthTitle = date.format('MMMM')
 	const daysCount = +date.clone().endOf('month').format('D')
 	const prevMonthDaysCount = +date.clone().startOf('month').format('d') - 1
-	const curDay = moment().month() === date.month() ? moment().day() : 0
-
+	const curDate = moment().month() === date.month() ? moment().date() : 0
 	function onSelectDay(evt) {
 		if (!evt.target.classList.contains('selected')) {
 			document.querySelector('.comes-grid__item.selected').classList.remove('selected')
 			evt.target.classList.add('selected')
-			const curDate = moment(date)
-			curDate.date(+evt.target.textContent)
-			document.querySelector('.info-per-day .block__header span').textContent = curDate.format('DD.MM.YYYY')
+			const selectedDate = moment(date)
+			selectedDate.date(+evt.target.textContent)
+			document.querySelector('.info-per-day .block__header span').textContent = selectedDate.format('DD.MM.YYYY')
 		}
 	}
 
@@ -36,11 +35,12 @@ export default function MonthChart({ date, data }) {
 					const matchedDay = data.filter(d => (+moment(d.Time).format('D')) === (i + 1))[0]
 
 					const additClasses = []
-					if (curDay === i + 1) additClasses.push('selected');
+					if (curDate === i + 1) additClasses.push('selected');
 					if (matchedDay.Coming > 0 || matchedDay.Leaving > 0)
 						additClasses.push('present');
-					else
+					else if ((curDate === 0 || curDate > i + 1) && moment(matchedDay.Time).day() !== 0)
 						additClasses.push('absent');
+
 
 					return <div onClick={onSelectDay} key={i} className={`comes-grid__item ${additClasses.join(' ')}`}>{i + 1}</div>
 				})}
