@@ -12,7 +12,6 @@ moment.locale('ru')
 
 function UsersPage({ onSessionExpired }) {
 	const [usersList, setUsersList] = useState([])
-	const [activeUserId, setActiveUserId] = useState(null)
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
 	const [searchValue, setSearchValue] = useState('')
 	const [groupList, setGroupList] = useState([])
@@ -26,6 +25,8 @@ function UsersPage({ onSessionExpired }) {
 	const [dayComesInfo, setDayComesInfo] = useState([])
 
 	const searchTimeout = useRef({})
+	const activeUserId = useRef(null)
+	const selectedDate = useRef(moment())
 
 	useMemo(() => {
 		loadUsers(0, 30)
@@ -79,12 +80,11 @@ function UsersPage({ onSessionExpired }) {
 	}
 
 	function onClickUser(id) {
-		setActiveUserId(id)
+		activeUserId.current = id
 		const user = usersList.filter(u => u.Id === id)[0]
 		const groupName = groupList.filter(g => g.Id === user.DepartmentId)[0]?.Name ?? 'Без группы'
 		setSelectedUserTitle(`${user.LastName} ${user.FirstName} ${user.MiddleName} ${groupName}`)
 		setComesIsLoading(true)
-		setDayInfoIsLoading(true)
 
 		let comesLoadedMonths = 0
 
@@ -106,31 +106,7 @@ function UsersPage({ onSessionExpired }) {
 				}
 			})
 
-		loadComesPerDay(moment(), id)
-			.then(data => {
-				const dataFormat = []
-				data.forEach((info, i) => {
-					const label = info.Coming > 0 ? 'Внутри' : 'Снаружи'
-					if (data.length === 1 || i === data.length - 1) {
-						dataFormat.push([label, moment(info.Time).second(0).millisecond(0).toDate(), moment().second(0).millisecond(0).toDate()])
-					}
-					if (i < data.length - 1) {
-						dataFormat.push([label, moment(info.Time).second(0).millisecond(0).toDate(), moment(data[i + 1].Time).second(0).millisecond(0).toDate()])
-					}
-				})
-				console.log('data', data)
-				console.log('format', dataFormat)
-
-				setDayComesInfo([
-					[
-						{ type: "string" },
-						{ type: "date" },
-						{ type: "date" }
-					],
-					...dataFormat
-				])
-				setDayInfoIsLoading(false)
-			})
+		onSelectDate(moment())
 	}
 
 	function onClickOpenAddUserPopup(evt) {
@@ -207,9 +183,52 @@ function UsersPage({ onSessionExpired }) {
 							onSessionExpired()
 						}
 					}
-					resolve(json.data ?? [])
+					const data = json.data ?? []
+					resolve(data)
 				})
 		})
+	}
+
+	function onSelectDate(date) {
+		selectedDate.current = date.clone()
+		setDayInfoIsLoading(true)
+		loadComesPerDay(date, activeUserId.current)
+			.then(data => {
+				const dataFormat = []
+				const toFormat = (m) => moment(m).second(0).millisecond(0).toDate();
+				function createTooltip(title, range) {
+					return `<div class="tooltip-title">${title}</div>` +
+						`<div class="tooltip-range" style="font-size: 1.6rem;">${range}</div>`;
+				}
+				data.forEach((info, i) => {
+					const label = info.Action === 'coming' ? 'Внутри' : 'Снаружи'
+					const color = info.Action === 'coming' ? '#009300' : '#e33838'
+					if (data.length === 1 || i === data.length - 1) {
+						const curMoment = moment()
+						const selectedMoment = moment(info.Time)
+						const isToday = curMoment.month() === selectedMoment.month() && curMoment.date() === selectedMoment.date() && curMoment.hour() < 23;
+						const endPoint = isToday ? toFormat(moment()) : toFormat(moment(info.Time).hour(23).minute(0));
+
+						dataFormat.push(['Активность', '', `${createTooltip(label, moment(info.Time).format('H:mm') + ' - ' + moment(endPoint).format('H:mm'))}`, color, toFormat(info.Time), endPoint]);
+					}
+					if (i < data.length - 1) {
+						dataFormat.push(['Активность', '', `${createTooltip(label, moment(info.Time).format('H:mm') + ' - ' + moment(data[i + 1].Time).format('H:mm'))}`, color, toFormat(info.Time), toFormat(data[i + 1].Time)])
+					}
+				})
+
+				setDayComesInfo([
+					[
+						{ type: "string", id: 'Role' },
+						{ type: "string", id: 'label' },
+						{ type: "string", role: 'tooltip' },
+						{ type: "string", role: 'style' },
+						{ type: "date", id: 'Start' },
+						{ type: "date", id: 'End' }
+					],
+					...dataFormat
+				])
+				setDayInfoIsLoading(false)
+			})
 	}
 
 	return (
@@ -222,13 +241,13 @@ function UsersPage({ onSessionExpired }) {
 						<div className="block comes-block">
 							<div className="block__header">Приходы</div>
 							<div className="block__content">
-								{!comesIsLoading && activeUserId !== null && (
+								{!comesIsLoading && activeUserId.current !== null && (
 									<>
-										<MonthChart date={moment().month(moment().month() - 1)} data={prevMonthData} />
-										<MonthChart date={moment()} data={curMonthData} />
+										<MonthChart date={moment().month(moment().month() - 1)} data={prevMonthData} onSelectDate={onSelectDate} />
+										<MonthChart date={moment()} data={curMonthData} onSelectDate={onSelectDate} />
 									</>
 								)}
-								{comesIsLoading && activeUserId !== null && (
+								{comesIsLoading && activeUserId.current !== null && (
 									<img src={loadingIcon} alt="" className={`loading ${usersIsLoading ? 'active' : ''}`} />
 								)}
 							</div>
@@ -236,26 +255,29 @@ function UsersPage({ onSessionExpired }) {
 						<div className="block info-per-day">
 							<div className="block__header">Информация за <span>{moment().format('DD.MM.YYYY')}</span></div>
 							<div className="block__content">
-								{!dayInfoIsLoading && activeUserId !== null && dayComesInfo.length > 1 && (
+								{!dayInfoIsLoading && activeUserId.current !== null && dayComesInfo.length > 1 && (
 									<Chart
 										chartType="Timeline"
 										chartLanguage='ru'
 										data={dayComesInfo}
 										width="100%"
-										height="100%"
+										height="100px"
 										options={{
 											hAxis: {
 												format: 'H:mm',
+												minValue: selectedDate.current.clone().hour(6).minute(0).second(0).millisecond(0).toDate(),
+												maxValue: selectedDate.current.clone().hour(23).minute(0).second(0).millisecond(0).toDate()
 											},
 											alternatingRowStyle: false,
-											colors: ['#009300', '#e33838']
+											tooltip: {
+											}
 										}}
 									/>
 								)}
-								{!dayInfoIsLoading && activeUserId !== null && dayComesInfo.length <= 1 && (
+								{!dayInfoIsLoading && activeUserId.current !== null && dayComesInfo.length <= 1 && (
 									'Нет информации'
 								)}
-								{dayInfoIsLoading && activeUserId !== null && (
+								{dayInfoIsLoading && activeUserId.current !== null && (
 									<img src={loadingIcon} alt="" className={`loading ${usersIsLoading ? 'active' : ''}`} />
 								)}
 							</div>
@@ -289,7 +311,7 @@ function UsersPage({ onSessionExpired }) {
 								</div>
 								<div className="users-list__list">
 									{[...usersList].filter(user => filterCount > 0 ? filteredList.includes(user.Id) : user.LastName.toLowerCase().includes(searchValue.toLowerCase())).map(user => (
-										<div className={`users-list__item ${activeUserId === user.Id ? 'active' : ''}`}
+										<div className={`users-list__item ${activeUserId.current === user.Id ? 'active' : ''}`}
 											onClick={() => onClickUser(user.Id)}
 											key={user.Id} >{user.LastName} {user.FirstName} {user.MiddleName}</div>
 									))}

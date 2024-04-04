@@ -1,12 +1,14 @@
 import moment from 'moment'
 import 'moment/dist/locale/ru.js';
 moment.locale('ru')
+import './month-chart.scss'
 
-export default function MonthChart({ date, data }) {
+export default function MonthChart({ date, data, onSelectDate }) {
 	const monthTitle = date.format('MMMM')
 	const daysCount = +date.clone().endOf('month').format('D')
 	const prevMonthDaysCount = +date.clone().startOf('month').format('d') - 1
 	const curDate = moment().month() === date.month() ? moment().date() : 0
+
 	function onSelectDay(evt) {
 		if (!evt.target.classList.contains('selected')) {
 			document.querySelector('.comes-grid__item.selected').classList.remove('selected')
@@ -14,6 +16,8 @@ export default function MonthChart({ date, data }) {
 			const selectedDate = moment(date)
 			selectedDate.date(+evt.target.textContent)
 			document.querySelector('.info-per-day .block__header span').textContent = selectedDate.format('DD.MM.YYYY')
+
+			onSelectDate(selectedDate)
 		}
 	}
 
