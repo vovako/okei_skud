@@ -202,7 +202,7 @@ function UsersPage({ onSessionExpired }) {
 				}
 				data.forEach((info, i) => {
 					const label = info.Action === 'coming' ? 'Внутри' : 'Снаружи'
-					const color = info.Action === 'coming' ? '#009300' : '#e33838'
+					const color = info.Action === 'coming' ? '#009300' : '#d35f00'
 					if (data.length === 1 || i === data.length - 1) {
 						const curMoment = moment()
 						const selectedMoment = moment(info.Time)
@@ -269,8 +269,7 @@ function UsersPage({ onSessionExpired }) {
 												maxValue: selectedDate.current.clone().hour(23).minute(0).second(0).millisecond(0).toDate()
 											},
 											alternatingRowStyle: false,
-											tooltip: {
-											}
+											lineWidth: 50,
 										}}
 									/>
 								)}
