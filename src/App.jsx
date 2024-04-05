@@ -5,6 +5,7 @@ import LoginPage from './components/LoginPage/LoginPage'
 import ErrorPage from './components/ErrorPage/ErrorPage'
 import MainPage from './components/MainPage/MainPage'
 import UsersPage from './components/UsersPage/UsersPage'
+import KeysPage from './components/KeysPage/KeysPage'
 
 function App() {
 
@@ -64,6 +65,7 @@ function App() {
 			<Routes>
 				<Route path='/' element={sessionIsActive ? <MainPage /> : <LoginPage setSessionIsActive={setSessionIsActive} />} />
 				<Route path='/users' element={<UsersPage onSessionExpired={onSessionExpired} />} />
+				<Route path='/keys' element={<KeysPage onSessionExpired={onSessionExpired} />} />
 				<Route path='*' element={<ErrorPage />} />
 			</Routes>
 		</BrowserRouter>

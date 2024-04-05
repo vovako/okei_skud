@@ -16,14 +16,22 @@
 .menu {
 	display: flex;
 	align-items: center;
-	gap: 1rem;
 	&__item {
 		color: white;
 		font-size: 1.8rem;
-		border: 2px solid transparent;
+		// border: 2px solid transparent;
+		transform: skew(-15deg);
+		padding: 5px 14px;
+		font-weight: 600;
+		span {
+			transform: skew(15deg);
+			display: block;
+		}
 
 		&.active {
-			border-bottom: 2px solid white;
+			box-shadow: 0 0 10px rgba(white, 0.4) inset;
+			// border-bottom: 2px solid white;
+			background: var(--bg-gradient);
 		}
 	}
 }
@@ -54,14 +62,20 @@
 		bottom: 0;
 		right: 0;
 		translate: 0 100%;
-		background-color: black;
+		background: var(--bg-gradient);
+		box-shadow: 0 0 10px rgba(white, 0.4) inset,
+		 0 3px 10px rgba(black, 0.4) ;
 		display: none;
+		
 	}
 	&__popup-btn {
 		font-size: 1.6rem;
 		line-height: 2rem;
 		color: white;
 		padding: 1rem 2rem;
+		&:hover {
+			background-color: rgba(black, 0.1);
+		}
 	}
 
 	&.active {

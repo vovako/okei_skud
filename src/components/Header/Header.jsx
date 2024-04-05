@@ -21,8 +21,9 @@ function Header() {
 		<header className="header">
 			<div className="logo">ОКЭИ СКУД</div>
 			<div className="menu">
-				<Link to='/' className={`menu__item ${location.pathname === '/' ? 'active' : ''}`}>Главная</Link>
-				<Link to='/users' className={`menu__item ${location.pathname === '/users' ? 'active' : ''}`}>Студенты</Link>
+				<Link to='/' className={`menu__item ${location.pathname === '/' ? 'active' : ''}`}><span>Главная</span></Link>
+				<Link to='/users' className={`menu__item ${location.pathname === '/users' ? 'active' : ''}`}><span>Студенты</span></Link>
+				<Link to='/keys' className={`menu__item ${location.pathname === '/keys' ? 'active' : ''}`}><span>Ключи</span></Link>
 			</div>
 			<div className='profile'>
 				<button onClick={onClickDetailsBtn} className="profile__open-btn">

@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '../Header/Header';
 import './main-page.scss'
+import Chart from 'react-google-charts';
 
 function MainPage() {
 	return (
@@ -27,7 +28,7 @@ function MainPage() {
 				<div className="block anomalies-block">
 					<div className="block__header">Аномалии</div>
 					<div className="block__content">
-						<div id="anomaly-chart"></div>
+
 					</div>
 				</div>
 			</div>
