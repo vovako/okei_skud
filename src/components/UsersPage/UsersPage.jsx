@@ -10,7 +10,7 @@ import moment from 'moment'
 import 'moment/dist/locale/ru.js';
 moment.locale('ru')
 
-function UsersPage({ onSessionExpired }) {
+function UsersPage({ onSessionExpired, loadGroup }) {
 	const [usersList, setUsersList] = useState([])
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
 	const [searchValue, setSearchValue] = useState('')
@@ -31,6 +31,7 @@ function UsersPage({ onSessionExpired }) {
 	useMemo(() => {
 		loadUsers(0, 30)
 		loadGroup()
+			.then(data => setGroupList(data))
 	}, [])
 
 	function loadUsers(start, count, filterProps = []) {
@@ -61,23 +62,7 @@ function UsersPage({ onSessionExpired }) {
 		})
 	}
 
-	function loadGroup() {
-		fetch(`${localStorage.getItem('origin')}/api/persons/departments`, {
-			headers: {
-				'Authorization': localStorage.getItem('session')
-			},
-		})
-			.then(res => res.json())
-			.then(json => {
-				if (json.error) {
-					console.warn(json.error)
-					if (json.error === 'сессия пользователя не действительна') {
-						onSessionExpired()
-					}
-				}
-				setGroupList(json.data)
-			})
-	}
+
 
 	function onClickUser(id) {
 		activeUserId.current = id

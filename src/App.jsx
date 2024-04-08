@@ -60,11 +60,31 @@ function App() {
 		})
 	}, [])
 
+	function loadGroup() {
+		return new Promise(resolve => {
+			fetch(`${localStorage.getItem('origin')}/api/persons/departments`, {
+				headers: {
+					'Authorization': localStorage.getItem('session')
+				},
+			})
+				.then(res => res.json())
+				.then(json => {
+					if (json.error) {
+						console.warn(json.error)
+						if (json.error === 'сессия пользователя не действительна') {
+							onSessionExpired()
+						}
+					}
+					resolve(json.data)
+				})
+		})
+	}
+
 	return (
 		<BrowserRouter>
 			<Routes>
 				<Route path='/' element={sessionIsActive ? <MainPage /> : <LoginPage setSessionIsActive={setSessionIsActive} />} />
-				<Route path='/users' element={<UsersPage onSessionExpired={onSessionExpired} />} />
+				<Route path='/users' element={<UsersPage onSessionExpired={onSessionExpired} loadGroup={loadGroup} />} />
 				<Route path='/keys' element={<KeysPage onSessionExpired={onSessionExpired} />} />
 				<Route path='*' element={<ErrorPage />} />
 			</Routes>
