@@ -62,5 +62,14 @@
 
 	td {
 		font-weight: 400;
+
+		&.come {
+			color: green;
+			font-weight: 600;
+		}
+		&.leave {
+			font-weight: 600;
+			color: red;
+		}
 	}
 }

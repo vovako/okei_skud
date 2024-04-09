@@ -22,10 +22,9 @@ function MainPage() {
 
 		setEventsList(prev => {
 			const temp = [...prev]
-			if (prev.length + newData.length > 50) {
-				temp.splice(0, newData.length, ...newData)
-			} else {
-				temp.push(...newData)
+			temp.push(...newData)
+			if (temp.length - 100 > 0) {
+				temp.splice(0, temp.length - 100)
 			}
 			return temp
 		})
@@ -101,12 +100,12 @@ function MainPage() {
 								</tr>
 							</thead>
 							<tbody>
-								{eventsList.reverse().map(e => {
+								{[...eventsList].reverse().map(e => {
 									return (
 										<tr key={e.EventId}>
 											<td>{moment(e.EventDate).format('H:mm:ss')}</td>
 											<td>{e.LastName} {e.FirstName} {e.MiddleName}</td>
-											<td>{e.PassMode === 1 ? 'Вошёл' : 'Вышел'}</td>
+											<td className={e.PassMode === 1 ? 'come' : 'leave'}>{e.PassMode === 1 ? 'Вошёл' : 'Вышел'}</td>
 										</tr>
 									)
 								})}
