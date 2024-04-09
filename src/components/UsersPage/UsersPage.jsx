@@ -10,7 +10,7 @@ import moment from 'moment'
 import 'moment/dist/locale/ru.js';
 moment.locale('ru')
 
-function UsersPage({ onSessionExpired, loadGroup }) {
+export default function UsersPage({ onFetchError, loadGroup }) {
 	const [usersList, setUsersList] = useState([])
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
 	const [searchValue, setSearchValue] = useState('')
@@ -35,23 +35,20 @@ function UsersPage({ onSessionExpired, loadGroup }) {
 	}, [])
 
 	function loadUsers(start, count, filterProps = []) {
-		return new Promise(resolve => {
+		return new Promise((resolve, reject) => {
 			setUsersIsLoading(true)
 			fetch(`${localStorage.getItem('origin')}/api/persons/filter/${start}/${count}`, {
 				method: 'post',
 				headers: {
 					'Content-Type': 'application/json',
-					'Authorization': localStorage.getItem('session')
 				},
 				body: JSON.stringify(filterProps)
 			})
 				.then(res => res.json())
 				.then(json => {
 					if (json.error) {
-						console.warn(json.error)
-						if (json.error === 'сессия пользователя не действительна') {
-							onSessionExpired()
-						}
+						onFetchError(json.error)
+						reject()
 					}
 					addUsersInUsersList(json.data)
 					resolve(json.data)
@@ -61,8 +58,6 @@ function UsersPage({ onSessionExpired, loadGroup }) {
 				})
 		})
 	}
-
-
 
 	function onClickUser(id) {
 		activeUserId.current = id
@@ -134,39 +129,28 @@ function UsersPage({ onSessionExpired, loadGroup }) {
 	}
 
 	function loadComesPerMonth(date, userId) {
-		return new Promise(resolve => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${date.format()}/${userId}`, {
-				headers: {
-					'Authorization': localStorage.getItem('session')
-				},
-			})
+		return new Promise((resolve, reject) => {
+			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${date.format()}/${userId}`)
 				.then(res => res.json())
 				.then(json => {
 					if (json.error) {
-						console.warn(json.error)
-						if (json.error === 'сессия пользователя не действительна') {
-							onSessionExpired()
-						}
+						onFetchError(json.error)
+						reject()
 					}
-					resolve(json.data ?? [])
+					const data = json.data ?? []
+					resolve(data)
 				})
 		})
 	}
 
 	function loadComesPerDay(date, userId) {
-		return new Promise(resolve => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/activity/dayly/${date.format()}/${userId}`, {
-				headers: {
-					'Authorization': localStorage.getItem('session')
-				},
-			})
+		return new Promise((resolve, reject) => {
+			fetch(`${localStorage.getItem('origin')}/api/persons/activity/dayly/${date.format()}/${userId}`)
 				.then(res => res.json())
 				.then(json => {
 					if (json.error) {
-						console.warn(json.error)
-						if (json.error === 'сессия пользователя не действительна') {
-							onSessionExpired()
-						}
+						onFetchError(json.error)
+						reject()
 					}
 					const data = json.data ?? []
 					resolve(data)
@@ -305,10 +289,8 @@ function UsersPage({ onSessionExpired, loadGroup }) {
 					</div>
 				</div>
 			</div >
-			<PopupAddUser onSessionExpired={onSessionExpired} groupList={groupList} />
+			<PopupAddUser onFetchError={onFetchError} groupList={groupList} />
 			<PopupFilter groupList={groupList} loadUsers={loadUsers} setFilterCount={setFilterCount} filterCount={filterCount} setFilteredList={setFilteredList} />
 		</>
 	);
 }
-
-export default UsersPage;

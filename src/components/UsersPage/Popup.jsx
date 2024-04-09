@@ -14,7 +14,7 @@ function Popup({ children, id }) {
 	);
 }
 
-export function PopupAddUser({ onSessionExpired, groupList }) {
+export function PopupAddUser({ onFetchError, groupList }) {
 	const [surname, setSurname] = useState('')
 	const [firstname, setFirstname] = useState('')
 	const [lastname, setLastname] = useState('')
@@ -25,39 +25,37 @@ export function PopupAddUser({ onSessionExpired, groupList }) {
 		statusEl.classList.remove('failed')
 		statusEl.classList.remove('success')
 
-		fetch(`${localStorage.getItem('origin')}/api/persons`, {
-			method: 'post',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': localStorage.getItem('session')
-			},
-			body: JSON.stringify({
-				"FirstName": firstname,
-				"LastName": surname,
-				"MiddleName": lastname,
-				"DepartmentId": +groupId
+		return new Promise((resolve, reject) => {
+			fetch(`${localStorage.getItem('origin')}/api/persons`, {
+				method: 'post',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': localStorage.getItem('session')
+				},
+				body: JSON.stringify({
+					"FirstName": firstname,
+					"LastName": surname,
+					"MiddleName": lastname,
+					"DepartmentId": +groupId
+				})
 			})
-		})
-			.then(res => res.json())
-			.then(json => {
-				if (json.error) {
-					console.warn(json.error)
-					if (json.error === 'сессия пользователя не действительна') {
-						onSessionExpired()
-					} else {
+				.then(res => res.json())
+				.then(json => {
+					if (json.error) {
+						onFetchError(json.error)
 						statusEl.classList.add('failed')
+						reject()
 					}
-
-					return null
-				}
-				statusEl.classList.add('success')
-			})
-			.finally(() => {
-				setSurname('')
-				setFirstname('')
-				setLastname('')
-				setGroupId(0)
-			})
+					statusEl.classList.add('success')
+					resolve()
+				})
+				.finally(() => {
+					setSurname('')
+					setFirstname('')
+					setLastname('')
+					setGroupId(0)
+				})
+		})
 	}
 
 	return (

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.scss'
 import LoginPage from './components/LoginPage/LoginPage'
@@ -6,41 +7,44 @@ import ErrorPage from './components/ErrorPage/ErrorPage'
 import MainPage from './components/MainPage/MainPage'
 import UsersPage from './components/UsersPage/UsersPage'
 import KeysPage from './components/KeysPage/KeysPage'
+import { ErrorModal } from './components/ModalDialog/ModalDialog'
 
-function App() {
+export default function App() {
 
 	const [sessionIsActive, setSessionIsActive] = useState(false)
 
 	function onSessionExpired() {
-		localStorage.removeItem('session')
-		localStorage.removeItem('user-info')
-		if (location.pathname !== '/') {
-			location.pathname = '/'
-		}
+		// localStorage.removeItem('session')
+		// localStorage.removeItem('user-info')
+		// if (location.pathname !== '/') {
+		// 	location.pathname = '/'
+		// }
 	}
 
-	useMemo(() => {
-		const session = localStorage.getItem('session')
-		if (session === null) return
+	function onFetchError(msg) {
+		const errorModal = document.body.querySelector('#error-modal')
+		errorModal.querySelector('.modal-dialog__text').textContent = msg
+		errorModal.showModal()
+	}
 
-		fetch(`${localStorage.getItem('origin')}/login`, {
-			method: 'post',
-			headers: {
-				'Content-Type': 'application/json',
-				'Authorization': session
-			},
-			body: JSON.stringify({})
-		})
-			.then(res => res.json())
-			.then(json => {
-				if (json.error !== null) {
-					onSessionExpired()
-					return
-				}
-				localStorage.setItem('user-info', json.data.Username)
-				setSessionIsActive(true)
-			})
-	}, [sessionIsActive])
+	// useMemo(() => {
+	// 	fetch(`${localStorage.getItem('origin')}/login`, {
+	// 		method: 'post',
+	// 		headers: {
+	// 			'Content-Type': 'application/json'
+	// 		},
+	// 		body: JSON.stringify({})
+	// 	})
+	// 		.then(res => res.json())
+	// 		.then(json => {
+	// 			if (json.error !== null) {
+	// 				onFetchError(json.error)
+	// 				return
+	// 			}
+	// 			localStorage.setItem('user-info', json.data.Username)
+	// 			setSessionIsActive(true)
+	// 		})
+	// }, [sessionIsActive])
 
 	useEffect(() => {
 		document.addEventListener('click', (evt) => {
@@ -61,19 +65,15 @@ function App() {
 	}, [])
 
 	function loadGroup() {
-		return new Promise(resolve => {
+		return new Promise((resolve, reject) => {
 			fetch(`${localStorage.getItem('origin')}/api/persons/departments`, {
-				headers: {
-					'Authorization': localStorage.getItem('session')
-				},
+				credentials: 'include'
 			})
 				.then(res => res.json())
 				.then(json => {
 					if (json.error) {
-						console.warn(json.error)
-						if (json.error === 'сессия пользователя не действительна') {
-							onSessionExpired()
-						}
+						onFetchError(json.error)
+						reject()
 					}
 					resolve(json.data)
 				})
@@ -81,15 +81,22 @@ function App() {
 	}
 
 	return (
-		<BrowserRouter>
-			<Routes>
-				<Route path='/' element={sessionIsActive ? <MainPage /> : <LoginPage setSessionIsActive={setSessionIsActive} />} />
-				<Route path='/users' element={<UsersPage onSessionExpired={onSessionExpired} loadGroup={loadGroup} />} />
-				<Route path='/keys' element={<KeysPage onSessionExpired={onSessionExpired} />} />
-				<Route path='*' element={<ErrorPage />} />
-			</Routes>
-		</BrowserRouter>
+		<>
+			<BrowserRouter>
+				<Routes>
+					<Route path='/' element={sessionIsActive ? <MainPage onFetchError={onFetchError} /> : <LoginPage setSessionIsActive={setSessionIsActive} />} />
+					<Route path='/users' element={<UsersPage onFetchError={onFetchError} loadGroup={loadGroup} />} />
+					<Route path='/keys' element={<KeysPage onFetchError={onFetchError} />} />
+					<Route path='*' element={<ErrorPage />} />
+				</Routes>
+			</BrowserRouter>
+			{createPortal(
+				<ErrorModal />,
+				document.body
+			)}
+		</>
 	)
 }
 
-export default App
+
+

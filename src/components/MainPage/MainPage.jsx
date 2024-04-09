@@ -6,20 +6,11 @@ import moment from 'moment'
 import 'moment/dist/locale/ru.js';
 moment.locale('ru')
 
-function MainPage() {
+function MainPage({ onFetchError }) {
 
 	const [eventsList, setEventsList] = useState([])
 
 	function updateEventsList(newData) {
-		// setEventsList(prev => {
-		// 	const uniqueData = newData.filter(nd => [...prev].filter(ul => ul.Id === nd.Id).length < 1)
-		// 	const result = [...prev, ...uniqueData].sort((a, b) => (new Date(b.EventDate)).getTime() < (new Date(a.EventDate)).getTime())
-		// 	console.log(result)
-		// 	return result
-		// })
-
-		// const result = newData.sort((a, b) => ((new Date(b.EventDate)).getTime() > (new Date(a.EventDate)).getTime()).valueOf())
-
 		setEventsList(prev => {
 			const temp = [...prev]
 			temp.push(...newData)
@@ -36,7 +27,10 @@ function MainPage() {
 
 		ws.onmessage = (evt) => {
 			const json = JSON.parse(evt.data)
-			if (json.error !== null) return
+			if (json.error !== null) {
+				onFetchError(json.error)
+				return
+			}
 
 			updateEventsList(json.data.Events)
 		}

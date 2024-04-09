@@ -22,6 +22,7 @@ function LoginPage({ setSessionIsActive }) {
 			headers: {
 				'Content-Type': 'application/json'
 			},
+			credentials: 'include',
 			body: JSON.stringify({
 				"username": loginValue,
 				"password": passValue
@@ -34,7 +35,6 @@ function LoginPage({ setSessionIsActive }) {
 					setNotice(json.error)
 					return
 				}
-				localStorage.setItem('session', json.data.SessionId)
 				localStorage.setItem('user-info', json.data.Username)
 				setSessionIsActive(true)
 			})

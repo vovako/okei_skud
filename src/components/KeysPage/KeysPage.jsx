@@ -2,7 +2,7 @@ import React from 'react';
 import Header from '../Header/Header';
 import { PopupFilter } from '../UsersPage/Popup';
 
-function KeysPage() {
+function KeysPage({ onFetchError }) {
 	return (
 		<>
 			<Header />
