@@ -1,8 +1,9 @@
 import React from 'react';
 import Header from '../Header/Header';
 import { PopupFilter } from '../UsersPage/Popup';
+import { onFetchError } from '/src/components/func/fetch';
 
-function KeysPage({ onFetchError }) {
+function KeysPage() {
 	return (
 		<>
 			<Header />

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './header.scss'
 import arrowDown from '/src/assets/arrow.svg'
+import { logOut } from '../func/fetch';
 
 function Header() {
 	const location = useLocation()
@@ -13,8 +14,7 @@ function Header() {
 
 	function onClickExitBtn() {
 		localStorage.removeItem('user-info')
-		localStorage.removeItem('session')
-		window.location.pathname = '/'
+		logOut()
 	}
 
 	return (

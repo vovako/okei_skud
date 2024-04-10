@@ -1,40 +1,35 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect } from 'react';
 import './main-page.scss'
 import Header from '../Header/Header';
 import Chart from 'react-google-charts';
 import moment from 'moment'
 import 'moment/dist/locale/ru.js';
-moment.locale('ru')
+moment.locale('ru');
 
-function MainPage({ onFetchError }) {
+function MainPage({ eventsList, enterCount, exitCount, anomaliesIn, anomaliesOut }) {
 
-	const [eventsList, setEventsList] = useState([])
+	function updateComesChart(enterCount, exitCount) {
+		if (location.pathname !== '/') return
 
-	function updateEventsList(newData) {
-		setEventsList(prev => {
-			const temp = [...prev]
-			temp.push(...newData)
-			if (temp.length - 100 > 0) {
-				temp.splice(0, temp.length - 100)
-			}
-			return temp
-		})
+		const enterBar = document.querySelector('.enter-count-circle-bar')
+		enterBar.style.setProperty('--progress-value', enterCount)
+		enterBar.style.setProperty('--max-value', enterCount + exitCount)
+
+		const exitBar = document.querySelector('.exit-count-circle-bar')
+		exitBar.style.setProperty('--progress-value', exitCount)
+		exitBar.style.setProperty('--max-value', enterCount + exitCount)
+
+		const innerBar = document.querySelector('.in-count-circle-bar')
+		innerBar.style.setProperty('--progress-value', enterCount - exitCount)
+		innerBar.style.setProperty('--max-value', enterCount + exitCount)
 	}
 
-	useMemo(() => {
-		const link = localStorage.getItem('origin').replace('http', 'ws')
-		const ws = new WebSocket(`${link}/api/ws/monitor`)
+	useEffect(() => {
+		updateComesChart(enterCount, exitCount)
+	}, [enterCount, exitCount])
 
-		ws.onmessage = (evt) => {
-			const json = JSON.parse(evt.data)
-			if (json.error !== null) {
-				onFetchError(json.error)
-				return
-			}
-
-			updateEventsList(json.data.Events)
-		}
-	}, [])
+	useEffect(() => {
+	}, [anomaliesIn, anomaliesOut])
 
 	return (
 		<>
@@ -63,8 +58,8 @@ function MainPage({ onFetchError }) {
 								chartType="PieChart"
 								data={[
 									["Activity", "Кол-во"],
-									["Вошли", 11],
-									["Вышли", 10],
+									["Вход", anomaliesIn],
+									["Выход", anomaliesOut],
 								]}
 								options={{
 									title: "Аномалии",

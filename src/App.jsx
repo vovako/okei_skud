@@ -8,43 +8,44 @@ import MainPage from './components/MainPage/MainPage'
 import UsersPage from './components/UsersPage/UsersPage'
 import KeysPage from './components/KeysPage/KeysPage'
 import { ErrorModal } from './components/ModalDialog/ModalDialog'
+import { onFetchError } from '/src/components/func/fetch';
 
 export default function App() {
+	const [eventsList, setEventsList] = useState([])
+	const [enterCount, setEnterCount] = useState(0)
+	const [exitCount, setExitCount] = useState(0)
+	const [anomaliesIn, setAnomaliesIn] = useState(1)
+	const [anomaliesOut, setAnomaliesOut] = useState(1)
 
-	const [sessionIsActive, setSessionIsActive] = useState(false)
-
-	function onSessionExpired() {
-		// localStorage.removeItem('session')
-		// localStorage.removeItem('user-info')
-		// if (location.pathname !== '/') {
-		// 	location.pathname = '/'
-		// }
+	function updateEventsList(newData) {
+		setEventsList(prev => {
+			const temp = [...prev]
+			temp.push(...newData)
+			if (temp.length - 100 > 0) {
+				temp.splice(0, temp.length - 100)
+			}
+			return temp
+		})
 	}
 
-	function onFetchError(msg) {
-		const errorModal = document.body.querySelector('#error-modal')
-		errorModal.querySelector('.modal-dialog__text').textContent = msg
-		errorModal.showModal()
-	}
+	useMemo(() => {
+		const link = localStorage.getItem('origin').replace('http', 'ws')
+		const ws = new WebSocket(`${link}/api/ws/monitor`)
 
-	// useMemo(() => {
-	// 	fetch(`${localStorage.getItem('origin')}/login`, {
-	// 		method: 'post',
-	// 		headers: {
-	// 			'Content-Type': 'application/json'
-	// 		},
-	// 		body: JSON.stringify({})
-	// 	})
-	// 		.then(res => res.json())
-	// 		.then(json => {
-	// 			if (json.error !== null) {
-	// 				onFetchError(json.error)
-	// 				return
-	// 			}
-	// 			localStorage.setItem('user-info', json.data.Username)
-	// 			setSessionIsActive(true)
-	// 		})
-	// }, [sessionIsActive])
+		ws.onmessage = (evt) => {
+			const json = JSON.parse(evt.data)
+			if (json.error !== null) {
+				onFetchError(json.error)
+				return
+			}
+			const data = json.data
+			updateEventsList(data.Events)
+			setEnterCount(data.CountInside)
+			setExitCount(data.CountOutside)
+			setAnomaliesIn(data.AnomalyIn)
+			setAnomaliesOut(data.AnomalyOut)
+		}
+	}, [])
 
 	useEffect(() => {
 		document.addEventListener('click', (evt) => {
@@ -64,29 +65,14 @@ export default function App() {
 		})
 	}, [])
 
-	function loadGroup() {
-		return new Promise((resolve, reject) => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/departments`, {
-				credentials: 'include'
-			})
-				.then(res => res.json())
-				.then(json => {
-					if (json.error) {
-						onFetchError(json.error)
-						reject()
-					}
-					resolve(json.data)
-				})
-		})
-	}
-
 	return (
 		<>
 			<BrowserRouter>
 				<Routes>
-					<Route path='/' element={sessionIsActive ? <MainPage onFetchError={onFetchError} /> : <LoginPage setSessionIsActive={setSessionIsActive} />} />
-					<Route path='/users' element={<UsersPage onFetchError={onFetchError} loadGroup={loadGroup} />} />
-					<Route path='/keys' element={<KeysPage onFetchError={onFetchError} />} />
+					<Route path='/' element={<MainPage eventsList={eventsList} enterCount={enterCount} exitCount={exitCount} anomaliesIn={anomaliesIn} anomaliesOut={anomaliesOut} />} />
+					<Route path='/login' element={<LoginPage />} />
+					<Route path='/users' element={<UsersPage />} />
+					<Route path='/keys' element={<KeysPage />} />
 					<Route path='*' element={<ErrorPage />} />
 				</Routes>
 			</BrowserRouter>

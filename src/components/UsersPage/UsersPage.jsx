@@ -9,8 +9,9 @@ import loadingIcon from '/src/assets/loading.gif'
 import moment from 'moment'
 import 'moment/dist/locale/ru.js';
 moment.locale('ru')
+import { onFetchError, loadGroup } from '/src/components/func/fetch';
 
-export default function UsersPage({ onFetchError, loadGroup }) {
+export default function UsersPage() {
 	const [usersList, setUsersList] = useState([])
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
 	const [searchValue, setSearchValue] = useState('')
@@ -35,13 +36,14 @@ export default function UsersPage({ onFetchError, loadGroup }) {
 	}, [])
 
 	function loadUsers(start, count, filterProps = []) {
+		setUsersIsLoading(true)
 		return new Promise((resolve, reject) => {
-			setUsersIsLoading(true)
 			fetch(`${localStorage.getItem('origin')}/api/persons/filter/${start}/${count}`, {
 				method: 'post',
 				headers: {
 					'Content-Type': 'application/json',
 				},
+				credentials: 'include',
 				body: JSON.stringify(filterProps)
 			})
 				.then(res => res.json())
@@ -50,8 +52,9 @@ export default function UsersPage({ onFetchError, loadGroup }) {
 						onFetchError(json.error)
 						reject()
 					}
-					addUsersInUsersList(json.data)
-					resolve(json.data)
+					const data = json.data ?? []
+					addUsersInUsersList(data)
+					resolve(data)
 				})
 				.finally(() => {
 					setUsersIsLoading(false)
@@ -130,7 +133,9 @@ export default function UsersPage({ onFetchError, loadGroup }) {
 
 	function loadComesPerMonth(date, userId) {
 		return new Promise((resolve, reject) => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${date.format()}/${userId}`)
+			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${date.format()}/${userId}`, {
+				credentials: 'include'
+			})
 				.then(res => res.json())
 				.then(json => {
 					if (json.error) {
@@ -145,7 +150,9 @@ export default function UsersPage({ onFetchError, loadGroup }) {
 
 	function loadComesPerDay(date, userId) {
 		return new Promise((resolve, reject) => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/activity/dayly/${date.format()}/${userId}`)
+			fetch(`${localStorage.getItem('origin')}/api/persons/activity/dayly/${date.format()}/${userId}`, {
+				credentials: 'include'
+			})
 				.then(res => res.json())
 				.then(json => {
 					if (json.error) {
