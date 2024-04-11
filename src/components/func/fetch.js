@@ -8,7 +8,7 @@ export function logOut() {
 			if (json.error) {
 				onFetchError(json.error)
 			}
-			location.pathname = '/login'
+			location.hash = '#/login'
 		})
 }
 

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Routes, Route, HashRouter } from 'react-router-dom'
 import './App.scss'
 import LoginPage from './components/LoginPage/LoginPage'
 import ErrorPage from './components/ErrorPage/ErrorPage'
@@ -67,7 +67,7 @@ export default function App() {
 
 	return (
 		<>
-			<BrowserRouter>
+			<HashRouter>
 				<Routes>
 					<Route path='/' element={<MainPage eventsList={eventsList} enterCount={enterCount} exitCount={exitCount} anomaliesIn={anomaliesIn} anomaliesOut={anomaliesOut} />} />
 					<Route path='/login' element={<LoginPage />} />
@@ -75,7 +75,7 @@ export default function App() {
 					<Route path='/keys' element={<KeysPage />} />
 					<Route path='*' element={<ErrorPage />} />
 				</Routes>
-			</BrowserRouter>
+			</HashRouter>
 			{createPortal(
 				<ErrorModal />,
 				document.body
