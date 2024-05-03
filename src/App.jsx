@@ -9,13 +9,18 @@ import UsersPage from './components/UsersPage/UsersPage'
 import KeysPage from './components/KeysPage/KeysPage'
 import { ErrorModal } from './components/ModalDialog/ModalDialog'
 import { onFetchError } from '/src/components/func/fetch';
+import { AuthContext } from './context'
 
 export default function App() {
+
 	const [eventsList, setEventsList] = useState([])
 	const [enterCount, setEnterCount] = useState(0)
 	const [exitCount, setExitCount] = useState(0)
 	const [anomaliesIn, setAnomaliesIn] = useState(1)
 	const [anomaliesOut, setAnomaliesOut] = useState(1)
+	const [isAuth, setIsAuth] = useState(false)
+
+	
 
 	function updateEventsList(newData) {
 		setEventsList(prev => {
@@ -48,6 +53,10 @@ export default function App() {
 	}, [])
 
 	useEffect(() => {
+		if (localStorage.getItem('user-info') !== null) {
+			setIsAuth(true)
+		}
+
 		document.addEventListener('click', (evt) => {
 			const target = evt.target
 
@@ -67,15 +76,25 @@ export default function App() {
 
 	return (
 		<>
-			<HashRouter>
-				<Routes>
-					<Route path='/' element={<MainPage eventsList={eventsList} enterCount={enterCount} exitCount={exitCount} anomaliesIn={anomaliesIn} anomaliesOut={anomaliesOut} />} />
-					<Route path='/login' element={<LoginPage />} />
-					<Route path='/users' element={<UsersPage />} />
-					<Route path='/keys' element={<KeysPage />} />
-					<Route path='*' element={<ErrorPage />} />
-				</Routes>
-			</HashRouter>
+			<AuthContext.Provider value={{ isAuth, setIsAuth }}>
+				<HashRouter>
+					{isAuth && (
+						<Routes>
+							<Route path='/' element={<MainPage eventsList={eventsList} enterCount={enterCount} exitCount={exitCount} anomaliesIn={anomaliesIn} anomaliesOut={anomaliesOut} />} />
+							<Route path='/login' element={<LoginPage />} />
+							<Route path='/users' element={<UsersPage />} />
+							<Route path='/keys' element={<KeysPage />} />
+							<Route path='*' element={<ErrorPage />} />
+						</Routes>
+					)}
+					{!isAuth && (
+						<Routes>
+							<Route path='/' element={<LoginPage />} />
+							<Route path='*' element={<LoginPage />} />
+						</Routes>
+					)}
+				</HashRouter>
+			</AuthContext.Provider>
 			{createPortal(
 				<ErrorModal />,
 				document.body

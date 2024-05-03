@@ -8,7 +8,6 @@ export function logOut() {
 			if (json.error) {
 				onFetchError(json.error)
 			}
-			location.hash = '#/login'
 		})
 }
 
@@ -18,9 +17,8 @@ export function onFetchError(msg) {
 	errorModal.showModal()
 
 	if (msg.trim() === 'сессия пользователя не действительна') {
-		setTimeout(() => {
-			logOut()
-		}, 2000)
+		localStorage.removeItem('user-info')
+		location.pathname = '/'
 	}
 }
 
