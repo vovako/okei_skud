@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Routes, Route, HashRouter } from 'react-router-dom'
+import { Routes, Route, HashRouter, Navigate } from 'react-router-dom'
 import './App.scss'
 import LoginPage from './components/LoginPage/LoginPage'
 import ErrorPage from './components/ErrorPage/ErrorPage'
@@ -10,6 +10,9 @@ import KeysPage from './components/KeysPage/KeysPage'
 import { ErrorModal } from './components/ModalDialog/ModalDialog'
 import { onFetchError } from '/src/components/func/fetch';
 import { AuthContext } from './context'
+import { GroupdProvider } from './hooks/useGroups'
+import { origin } from './hooks/useFetch'
+
 
 export default function App() {
 
@@ -19,8 +22,6 @@ export default function App() {
 	const [anomaliesIn, setAnomaliesIn] = useState(1)
 	const [anomaliesOut, setAnomaliesOut] = useState(1)
 	const [isAuth, setIsAuth] = useState(false)
-
-	
 
 	function updateEventsList(newData) {
 		setEventsList(prev => {
@@ -34,7 +35,7 @@ export default function App() {
 	}
 
 	useMemo(() => {
-		const link = localStorage.getItem('origin').replace('http', 'ws')
+		const link = origin.replace('http', 'ws')
 		const ws = new WebSocket(`${link}/api/ws/monitor`)
 
 		ws.onmessage = (evt) => {
@@ -76,25 +77,19 @@ export default function App() {
 
 	return (
 		<>
-			<AuthContext.Provider value={{ isAuth, setIsAuth }}>
-				<HashRouter>
-					{isAuth && (
+			<GroupdProvider>
+				<AuthContext.Provider value={[isAuth, setIsAuth]}>
+					<HashRouter>
 						<Routes>
-							<Route path='/' element={<MainPage eventsList={eventsList} enterCount={enterCount} exitCount={exitCount} anomaliesIn={anomaliesIn} anomaliesOut={anomaliesOut} />} />
-							<Route path='/login' element={<LoginPage />} />
-							<Route path='/users' element={<UsersPage />} />
-							<Route path='/keys' element={<KeysPage />} />
+							<Route path='/' element={isAuth ? <MainPage eventsList={eventsList} enterCount={enterCount} exitCount={exitCount} anomaliesIn={anomaliesIn} anomaliesOut={anomaliesOut} /> : <Navigate replace to={'/login'} />} />
+							<Route path='/login' element={!isAuth ? <LoginPage /> : <Navigate replace to={'/'} />} />
+							<Route path='/users' element={isAuth ? <UsersPage /> : <LoginPage />} />
+							<Route path='/keys' element={isAuth ? <KeysPage /> : <LoginPage />} />
 							<Route path='*' element={<ErrorPage />} />
 						</Routes>
-					)}
-					{!isAuth && (
-						<Routes>
-							<Route path='/' element={<LoginPage />} />
-							<Route path='*' element={<LoginPage />} />
-						</Routes>
-					)}
-				</HashRouter>
-			</AuthContext.Provider>
+					</HashRouter>
+				</AuthContext.Provider>
+			</GroupdProvider>
 			{createPortal(
 				<ErrorModal />,
 				document.body

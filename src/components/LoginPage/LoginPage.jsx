@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'
 import './login-page.scss'
+import useAuth from '../../hooks/useAuth';
 
 function LoginPage() {
 	const [isRegActive, setIsRegActive] = useState(false);
 	const [loginValue, setLoginValue] = useState('');
 	const [passValue, setPassValue] = useState('');
 	const [notice, setNotice] = useState('');
-	const navigate = useNavigate()
+	const { setIsAuth } = useAuth()
 
 	function switchMode() {
 		setIsRegActive(!isRegActive)
@@ -38,8 +38,7 @@ function LoginPage() {
 					return
 				}
 				localStorage.setItem('user-info', json.data.Username)
-				// document.cookie = "test=;expires=" + new Date(0).toUTCString()
-				navigate('/', { replace: true })
+				setIsAuth(true)
 			})
 	}
 

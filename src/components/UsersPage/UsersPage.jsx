@@ -3,35 +3,33 @@ import MonthChart from '../MonthChart/MonthChart'
 import Chart from 'react-google-charts'
 import Header from '../Header/Header'
 import './users-page.scss'
-import filterImg from '/src/assets/filter.svg'
-import { PopupAddUser, PopupFilter } from './Popup'
 import loadingIcon from '/src/assets/loading.gif'
 import moment from 'moment'
 import 'moment/dist/locale/ru.js';
 moment.locale('ru')
-import { onFetchError, loadGroup } from '/src/components/func/fetch';
+import { onFetchError } from '/src/components/func/fetch';
+import UsersBlock from './UsersBlock'
+import useGroups from '../../hooks/useGroups'
 
 export default function UsersPage() {
 	const [usersList, setUsersList] = useState([])
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
-	const [searchValue, setSearchValue] = useState('')
-	const [groupList, setGroupList] = useState([])
 	const [usersIsLoading, setUsersIsLoading] = useState(false)
 	const [comesIsLoading, setComesIsLoading] = useState(false)
 	const [dayInfoIsLoading, setDayInfoIsLoading] = useState(false)
-	const [filterCount, setFilterCount] = useState(0)
-	const [filteredList, setFilteredList] = useState([])
+	
 	const [prevMonthData, setPrevMonthData] = useState([])
 	const [curMonthData, setCurMonthData] = useState([])
 	const [dayComesInfo, setDayComesInfo] = useState([])
+	
+	const groupList = useGroups()
 
-	const searchTimeout = useRef({})
+
 	const activeUserId = useRef(null)
 	const selectedDate = useRef(moment())
 
 	useMemo(() => {
 		loadUsers(0, 30)
-		loadGroup()
 			.then(data => setGroupList(data))
 	}, [])
 
@@ -92,22 +90,6 @@ export default function UsersPage() {
 		onSelectDate(moment())
 	}
 
-	function onClickOpenAddUserPopup(evt) {
-		const sourceRect = evt.target.getBoundingClientRect()
-		const addPopupEl = evt.target.closest('body').querySelector('#add-user-popup')
-		addPopupEl.style.right = document.documentElement.clientWidth - sourceRect.right + 'px'
-		addPopupEl.style.top = sourceRect.top + 'px'
-		addPopupEl.classList.add('active')
-	}
-
-	function onClickOpenFilterPopup(evt) {
-		const sourceRect = evt.target.getBoundingClientRect()
-		const filterPopupEl = evt.target.closest('body').querySelector('#filter-popup')
-		filterPopupEl.style.right = document.documentElement.clientWidth - sourceRect.right + 'px'
-		filterPopupEl.style.top = sourceRect.top + 'px'
-		filterPopupEl.classList.add('active')
-	}
-
 	function addUsersInUsersList(newData) {
 		if (newData === null) {
 			newData = []
@@ -116,20 +98,7 @@ export default function UsersPage() {
 		setUsersList([...usersList, ...uniqueData])
 	}
 
-	function onChangeSearchInput(evt) {
-		setSearchValue(evt.target.value)
-		clearTimeout(searchTimeout.current)
-		searchTimeout.current = setTimeout(() => {
-
-			const params = [
-				`LastName=${evt.target.value}`
-			]
-			loadUsers(0, 100, params)
-				.then(_ => setFilterCount(0))
-
-		}, 400)
-
-	}
+	
 
 	function loadComesPerMonth(date, userId) {
 		return new Promise((resolve, reject) => {
@@ -262,42 +231,9 @@ export default function UsersPage() {
 
 				<div className="users-page__properties">
 					<div className="title">Список студентов</div>
-					<div className="block users-block">
-						<div className="block__content">
-							<div className="users-search-row">
-
-								<search className="users-search-row__search">
-									<input type="search" placeholder='Поиск по фамилии'
-										value={searchValue}
-										onChange={onChangeSearchInput} />
-								</search>
-								<img src={loadingIcon} alt="" className={`loading ${usersIsLoading ? 'active' : ''}`} />
-								<div className="users-search-row__filter users-filter">
-									<button onClick={onClickOpenFilterPopup} className="users-filter__btn btn btn_green">
-										<img src={filterImg} alt="" />
-										<div className="users-filter__label">{filterCount > 0 && filterCount}</div>
-									</button>
-									<div className="users-filter__popup"></div>
-								</div>
-							</div>
-							<div className="users-list">
-								<div className="users-list__actions">
-									<button onClick={onClickOpenAddUserPopup} className="btn btn_green users-list__add-btn">Добавить</button>
-								</div>
-								<div className="users-list__list">
-									{[...usersList].filter(user => filterCount > 0 ? filteredList.includes(user.Id) : user.LastName.toLowerCase().includes(searchValue.toLowerCase())).map(user => (
-										<div className={`users-list__item ${activeUserId.current === user.Id ? 'active' : ''}`}
-											onClick={() => onClickUser(user.Id)}
-											key={user.Id} >{user.LastName} {user.FirstName} {user.MiddleName}</div>
-									))}
-								</div>
-							</div>
-						</div>
-					</div>
+					{/* <UsersBlock /> */}
 				</div>
 			</div >
-			<PopupAddUser onFetchError={onFetchError} groupList={groupList} />
-			<PopupFilter groupList={groupList} loadUsers={loadUsers} setFilterCount={setFilterCount} filterCount={filterCount} setFilteredList={setFilteredList} />
 		</>
 	);
 }

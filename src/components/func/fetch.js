@@ -1,14 +1,19 @@
 export function logOut() {
-	fetch(`${localStorage.getItem('origin')}/logout`, {
-		method: 'post',
-		credentials: 'include'
-	})
-		.then(res => res.json())
-		.then(json => {
-			if (json.error) {
-				onFetchError(json.error)
-			}
+	return new Promise((resolve, reject) => {
+		fetch(`${localStorage.getItem('origin')}/logout`, {
+			method: 'post',
+			credentials: 'include'
 		})
+			.then(res => res.json())
+			.then(json => {
+				if (json.error) {
+					onFetchError(json.error)
+					reject()
+				}
+
+				resolve()
+			})
+	})
 }
 
 export function onFetchError(msg) {
@@ -20,20 +25,4 @@ export function onFetchError(msg) {
 		localStorage.removeItem('user-info')
 		location.pathname = '/'
 	}
-}
-
-export function loadGroup() {
-	return new Promise((resolve, reject) => {
-		fetch(`${localStorage.getItem('origin')}/api/persons/departments`, {
-			credentials: 'include'
-		})
-			.then(res => res.json())
-			.then(json => {
-				if (json.error) {
-					onFetchError(json.error)
-					reject()
-				}
-				resolve(json.data)
-			})
-	})
 }

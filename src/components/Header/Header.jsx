@@ -3,10 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './header.scss'
 import arrowDown from '/src/assets/arrow.svg'
 import { logOut } from '../func/fetch';
+import useAuth from '../../hooks/useAuth';
 
 function Header() {
 	const location = useLocation()
 	const userName = localStorage.getItem('user-info')
+	const { setIsAuth } = useAuth()
 
 	function onClickDetailsBtn(evt) {
 		evt.target.closest('.profile').classList.toggle('active')
@@ -15,6 +17,7 @@ function Header() {
 	function onClickExitBtn() {
 		localStorage.removeItem('user-info')
 		logOut()
+			.then(_ => setIsAuth(false))
 	}
 
 	return (
