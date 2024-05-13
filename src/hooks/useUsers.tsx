@@ -1,4 +1,4 @@
-import { ReactElement, createContext, useContext, useEffect, useState } from "react";
+import { FC, ReactElement, createContext, useContext, useEffect, useState } from "react";
 import { request } from "@utils/request";
 import useAuth from "./useAuth";
 
@@ -20,7 +20,7 @@ export const UsersContext = createContext({} as IUsersContext)
 interface IUsersProvider {
 	children: ReactElement
 }
-export const UsersdProvider = ({ children }: IUsersProvider) => {
+export const UsersdProvider: FC<IUsersProvider> = ({ children }) => {
 	const { isAuth } = useAuth()
 	const [users, setUsers] = useState<Iuser[]>([])
 	const [usersIsLoading, setUsersIsLoading] = useState(false)
@@ -36,7 +36,11 @@ export const UsersdProvider = ({ children }: IUsersProvider) => {
 	useEffect(() => {
 		if (!isAuth) return;
 
+		setUsersIsLoading(true)
+
 		loadUsers(0, 30)
+			.then(data => addUsers(data))
+			.finally(() => setUsersIsLoading(false))
 
 	}, [isAuth])
 
@@ -54,44 +58,31 @@ const useUsers = () => {
 export default useUsers
 
 export function loadUsers(start: number, count: number, filterProps: string[] = []) {
-	const { setUsersIsLoading, addUsers } = useContext(UsersContext)
 
-	setUsersIsLoading(true)
-
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve: (value: Iuser[]) => void, reject) => {
 		request(`/api/persons/filter/${start}/${count}`, 'post', filterProps)
 			.then(usersData => {
-				const data = usersData ?? []
-				addUsers(data as any[])
+				const data = (usersData ?? []) as Iuser[]
 				resolve(data)
 			})
 			.catch(err => reject(err))
-			.finally(() => {
-				setUsersIsLoading(false)
-			})
 	})
 }
 export function addUser(firstname: string, surname: string, lastname: string, groupId: number) {
-	const { setUsersIsLoading, addUsers } = useContext(UsersContext)
 
-	setUsersIsLoading(true)
-
-	return new Promise((resolve, reject) => {
+	return new Promise((resolve: (value: Iuser[]) => void, reject) => {
 		const body = {
 			"FirstName": firstname,
 			"LastName": surname,
 			"MiddleName": lastname,
 			"DepartmentId": groupId
 		}
+		
 		request(`/api/persons`, 'post', body)
 			.then(usersData => {
-				const data = usersData ?? []
-				addUsers(data as any[])
+				const data = (usersData ?? []) as Iuser[]
 				resolve(data)
 			})
 			.catch(err => reject(err))
-			.finally(() => {
-				setUsersIsLoading(false)
-			})
 	})
 }

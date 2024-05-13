@@ -1,4 +1,4 @@
-import { ReactElement, createContext, useContext, useEffect, useState } from "react";
+import { FC, ReactElement, createContext, useContext, useEffect, useState } from "react";
 import { request } from "@utils/request";
 import useAuth from "./useAuth";
 
@@ -15,7 +15,7 @@ export const GroupContext = createContext({} as IGroupContext)
 interface IGroupProvider {
 	children: ReactElement
 }
-export const GroupdProvider = ({ children }: IGroupProvider) => {
+export const GroupdProvider: FC<IGroupProvider> = ({ children }) => {
 	const { isAuth } = useAuth()
 	const [groups, setGroups] = useState<Igroup[]>([])
 

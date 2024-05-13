@@ -111,7 +111,8 @@ export function PopupFilter({ setFilterCount, filterCount, setFilteredList }: IP
 
 		loadUsers(0, filterCount > 0 ? 100 : 30, opts)
 			.then(data => {
-				setFilteredList(data !== null ? (data as Iuser).map(u => u.Id) : [])
+				const newUser = data as Iuser[]
+				setFilteredList(data !== null ? newUser.map(u => u.Id) : [])
 			})
 		setFilterCount(filterCount)
 

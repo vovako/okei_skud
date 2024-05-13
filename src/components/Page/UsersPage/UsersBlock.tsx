@@ -1,9 +1,9 @@
 import { useState, useRef, ChangeEvent, RefObject } from 'react'
 import { createPortal } from "react-dom"
 import { PopupAddUser, PopupFilter } from './Popup'
-import filterImg from '/src/assets/filter.svg'
-import loadingIcon from '/src/assets/loading.gif'
-import useUsers, { Iuser, loadUsers } from '@/hooks/useUsers'
+import filterImg from '@images/filter.svg'
+import loadingIcon from '@images/loading.gif'
+import useUsers, { loadUsers } from '@hooks/useUsers'
 
 interface IUsersBlock {
 	onClickUser: any,
@@ -14,7 +14,7 @@ const UsersBlock = ({ onClickUser, activeUserIdRef }: IUsersBlock) => {
 	const [filterCount, setFilterCount] = useState(0)
 	const [filteredList, setFilteredList] = useState<number[]>([])
 	const [searchValue, setSearchValue] = useState('')
-	const { users, usersIsLoading } = useUsers()
+	const { users, usersIsLoading, addUsers } = useUsers()
 
 	const searchTimeout = useRef<number>()
 
@@ -28,7 +28,10 @@ const UsersBlock = ({ onClickUser, activeUserIdRef }: IUsersBlock) => {
 				`LastName=${target.value}`
 			]
 			loadUsers(0, 100, params)
-				.then(_ => setFilterCount(0))
+				.then(newUsers => {
+					addUsers(newUsers)
+					setFilterCount(0)
+				})
 
 		}, 400)
 
@@ -89,7 +92,7 @@ const UsersBlock = ({ onClickUser, activeUserIdRef }: IUsersBlock) => {
 			{createPortal(
 				<>
 					<PopupAddUser />
-					<PopupFilter loadUsers={loadUsers} setFilterCount={setFilterCount} filterCount={filterCount} setFilteredList={setFilteredList} />
+					<PopupFilter setFilterCount={setFilterCount} filterCount={filterCount} setFilteredList={setFilteredList} />
 				</>,
 				document.body
 			)}

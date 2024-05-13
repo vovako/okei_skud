@@ -1,4 +1,4 @@
-import { ReactElement, createContext, useContext, useEffect, useState } from 'react'
+import { FC, ReactElement, createContext, useContext, useEffect, useState } from 'react'
 
 interface IAuthContext {
 	isAuth: boolean;
@@ -10,7 +10,7 @@ interface IAuthProvider {
 	children: ReactElement
 }
 
-export const AuthProvider = ({ children }: IAuthProvider) => {
+export const AuthProvider: FC<IAuthProvider> = ({ children }) => {
 	const storageItem = localStorage.getItem('user-info')
 	const [isAuth, setIsAuth] = useState(storageItem ? true : false)
 

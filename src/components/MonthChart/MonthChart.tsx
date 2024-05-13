@@ -3,19 +3,25 @@ import 'moment/dist/locale/ru.js';
 moment.locale('ru')
 import './month-chart.scss'
 
-export default function MonthChart({ date, data, onSelectDate }) {
+interface IMonthChart {
+	date: moment.Moment,
+	data: any[],
+	onSelectDate: any
+}
+export default function MonthChart({ date, data, onSelectDate }: IMonthChart) {
 	const monthTitle = date.format('MMMM')
 	const daysCount = +date.clone().endOf('month').format('D')
 	const prevMonthDaysCount = +date.clone().startOf('month').format('d') - 1
 	const curDate = moment().month() === date.month() ? moment().date() : 0
 
-	function onSelectDay(evt) {
-		if (!evt.target.classList.contains('selected')) {
-			document.querySelector('.comes-grid__item.selected').classList.remove('selected')
-			evt.target.classList.add('selected')
+	function onSelectDay(evt: MouseEvent) {
+		const target = evt.target as HTMLElement
+		if (!target.classList.contains('selected')) {
+			document.querySelector('.comes-grid__item.selected')!.classList.remove('selected')
+			target.classList.add('selected')
 			const selectedDate = moment(date)
-			selectedDate.date(+evt.target.textContent)
-			document.querySelector('.info-per-day .block__header span').textContent = selectedDate.format('DD.MM.YYYY')
+			selectedDate.date(+target.textContent!)
+			document.querySelector('.info-per-day .block__header span')!.textContent = selectedDate.format('DD.MM.YYYY')
 
 			onSelectDate(selectedDate)
 		}
@@ -46,7 +52,7 @@ export default function MonthChart({ date, data, onSelectDate }) {
 						additClasses.push('absent');
 
 
-					return <div onClick={onSelectDay} key={i} className={`comes-grid__item ${additClasses.join(' ')}`}>{i + 1}</div>
+					return <div onClick={onSelectDay as any} key={i} className={`comes-grid__item ${additClasses.join(' ')}`}>{i + 1}</div>
 				})}
 			</div>
 		</div>

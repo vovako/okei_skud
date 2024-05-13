@@ -1,5 +1,5 @@
 import './users-page.scss'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import MonthChart from '../../MonthChart/MonthChart'
 import Chart from 'react-google-charts'
 import moment from 'moment'
