@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './login-page.scss'
-import useAuth from '../../hooks/useAuth';
+import useAuth from '@hooks/useAuth';
+import { request } from '@utils/request';
 
 function LoginPage() {
 	const [isRegActive, setIsRegActive] = useState(false);
@@ -19,26 +20,19 @@ function LoginPage() {
 	function onLoginSubmit() {
 		if (loginValue.trim() === '' && passValue.trim() === '') return;
 
-		fetch(`${localStorage.getItem('origin')}/login`, {
-			method: 'post',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			credentials: 'include',
-			body: JSON.stringify({
-				"username": loginValue,
-				"password": passValue
-			})
-		})
-			.then(res => res.json())
-			.then(json => {
-				setNotice('')
-				if (json.error !== null) {
-					setNotice(json.error)
-					return
-				}
-				localStorage.setItem('user-info', json.data.Username)
+		const loginBody = {
+			"username": loginValue,
+			"password": passValue
+		}
+		setNotice('')
+		request('/login', 'post', loginBody)
+			.then((data: any) => {
+				localStorage.setItem('user-info', data.Username)
 				setIsAuth(true)
+				console.log(data)
+			})
+			.catch(err => {
+				setNotice(err)
 			})
 	}
 

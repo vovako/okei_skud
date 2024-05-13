@@ -1,76 +1,44 @@
-import React, { useMemo, useRef, useState } from 'react'
-import MonthChart from '../MonthChart/MonthChart'
-import Chart from 'react-google-charts'
-import Header from '../Header/Header'
 import './users-page.scss'
-import loadingIcon from '/src/assets/loading.gif'
+import { useMemo, useRef, useState } from 'react'
+import MonthChart from '../../MonthChart/MonthChart'
+import Chart from 'react-google-charts'
 import moment from 'moment'
 import 'moment/dist/locale/ru.js';
 moment.locale('ru')
-import { onFetchError } from '/src/components/func/fetch';
+import Header from '../Header/Header'
+import loadingIcon from '@images/loading.gif'
 import UsersBlock from './UsersBlock'
-import useGroups from '../../hooks/useGroups'
+import useGroups from '@hooks/useGroups'
+import { request } from '@/utils/request'
+import useUsers from '@/hooks/useUsers'
 
 export default function UsersPage() {
-	const [usersList, setUsersList] = useState([])
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
-	const [usersIsLoading, setUsersIsLoading] = useState(false)
 	const [comesIsLoading, setComesIsLoading] = useState(false)
 	const [dayInfoIsLoading, setDayInfoIsLoading] = useState(false)
-	
-	const [prevMonthData, setPrevMonthData] = useState([])
-	const [curMonthData, setCurMonthData] = useState([])
-	const [dayComesInfo, setDayComesInfo] = useState([])
-	
-	const groupList = useGroups()
 
+	const [prevMonthData, setPrevMonthData] = useState<any[]>([])
+	const [curMonthData, setCurMonthData] = useState<any[]>([])
+	const [dayComesInfo, setDayComesInfo] = useState<any[]>([])
 
-	const activeUserId = useRef(null)
+	const activeUserIdRef = useRef<number | null>(null)
 	const selectedDate = useRef(moment())
+	const { users, addUsers, usersIsLoading, setUsersIsLoading } = useUsers()
+	const { groups } = useGroups()
 
-	useMemo(() => {
-		loadUsers(0, 30)
-			.then(data => setGroupList(data))
-	}, [])
 
-	function loadUsers(start, count, filterProps = []) {
-		setUsersIsLoading(true)
-		return new Promise((resolve, reject) => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/filter/${start}/${count}`, {
-				method: 'post',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-				body: JSON.stringify(filterProps)
-			})
-				.then(res => res.json())
-				.then(json => {
-					if (json.error) {
-						onFetchError(json.error)
-						reject()
-					}
-					const data = json.data ?? []
-					addUsersInUsersList(data)
-					resolve(data)
-				})
-				.finally(() => {
-					setUsersIsLoading(false)
-				})
-		})
-	}
 
-	function onClickUser(id) {
-		activeUserId.current = id
-		const user = usersList.filter(u => u.Id === id)[0]
-		const groupName = groupList.filter(g => g.Id === user.DepartmentId)[0]?.Name ?? 'Без группы'
+	function onClickUser(id: number) {
+		activeUserIdRef.current = id
+		const user = users.filter((u) => u.Id === id)[0]
+		const groupName = groups.filter((g) => g.Id === user.DepartmentId)[0]?.Name ?? 'Без группы'
 		setSelectedUserTitle(`${user.LastName} ${user.FirstName} ${user.MiddleName} ${groupName}`)
 		setComesIsLoading(true)
 
 		let comesLoadedMonths = 0
 
 		loadComesPerMonth(moment(), id)
-			.then(data => {
+			.then((data: any) => {
 				setCurMonthData(data)
 				comesLoadedMonths += 1
 				if (comesLoadedMonths === 2) {
@@ -79,7 +47,7 @@ export default function UsersPage() {
 			})
 
 		loadComesPerMonth(moment().month(moment().month() - 1), id)
-			.then(data => {
+			.then((data: any) => {
 				setPrevMonthData(data)
 				comesLoadedMonths += 1
 				if (comesLoadedMonths === 2) {
@@ -90,62 +58,42 @@ export default function UsersPage() {
 		onSelectDate(moment())
 	}
 
-	function addUsersInUsersList(newData) {
-		if (newData === null) {
-			newData = []
-		}
-		const uniqueData = newData.filter(nd => [...usersList].filter(ul => ul.Id === nd.Id).length < 1)
-		setUsersList([...usersList, ...uniqueData])
-	}
 
-	
 
-	function loadComesPerMonth(date, userId) {
-		return new Promise((resolve, reject) => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/activity/monthly/${date.format()}/${userId}`, {
-				credentials: 'include'
-			})
-				.then(res => res.json())
-				.then(json => {
-					if (json.error) {
-						onFetchError(json.error)
-						reject()
-					}
-					const data = json.data ?? []
-					resolve(data)
+
+
+	function loadComesPerMonth(date: moment.Moment, userId: number) {
+		return new Promise((resolve) => {
+			request(`/api/persons/activity/monthly/${date.format()}/${userId}`)
+				.then(data => {
+					const comesPerMonth = data ?? []
+					resolve(comesPerMonth)
 				})
 		})
 	}
 
-	function loadComesPerDay(date, userId) {
-		return new Promise((resolve, reject) => {
-			fetch(`${localStorage.getItem('origin')}/api/persons/activity/dayly/${date.format()}/${userId}`, {
-				credentials: 'include'
-			})
-				.then(res => res.json())
-				.then(json => {
-					if (json.error) {
-						onFetchError(json.error)
-						reject()
-					}
-					const data = json.data ?? []
-					resolve(data)
+	function loadComesPerDay(date: moment.Moment, userId: number) {
+		return new Promise((resolve) => {
+			request(`/api/persons/activity/dayly/${date.format()}/${userId}`)
+				.then(data => {
+					const comesPerDay = (data ?? []) as any[]
+					resolve(comesPerDay)
 				})
 		})
 	}
 
-	function onSelectDate(date) {
+	function onSelectDate(date: moment.Moment) {
 		selectedDate.current = date.clone()
 		setDayInfoIsLoading(true)
-		loadComesPerDay(date, activeUserId.current)
-			.then(data => {
-				const dataFormat = []
-				const toFormat = (m) => moment(m).second(0).millisecond(0).toDate();
-				function createTooltip(title, range) {
+		loadComesPerDay(date, activeUserIdRef.current!)
+			.then((data: any) => {
+				const dataFormat: any[] = []
+				const toFormat = (m: moment.Moment) => moment(m).second(0).millisecond(0).toDate();
+				function createTooltip(title: string, range: string) {
 					return `<div class="tooltip-title">${title}</div>` +
 						`<div class="tooltip-range" style="font-size: 1.6rem;">${range}</div>`;
 				}
-				data.forEach((info, i) => {
+				data.forEach((info: any, i: number) => {
 					const label = info.Action === 'coming' ? 'Внутри' : 'Снаружи'
 					const color = info.Action === 'coming' ? '#009300' : '#d35f00'
 					if (data.length === 1 || i === data.length - 1) {
@@ -186,13 +134,13 @@ export default function UsersPage() {
 						<div className="block comes-block">
 							<div className="block__header">Приходы</div>
 							<div className="block__content">
-								{!comesIsLoading && activeUserId.current !== null && (
+								{!comesIsLoading && activeUserIdRef.current !== null && (
 									<>
 										<MonthChart date={moment().month(moment().month() - 1)} data={prevMonthData} onSelectDate={onSelectDate} />
 										<MonthChart date={moment()} data={curMonthData} onSelectDate={onSelectDate} />
 									</>
 								)}
-								{comesIsLoading && activeUserId.current !== null && (
+								{comesIsLoading && activeUserIdRef.current !== null && (
 									<img src={loadingIcon} alt="" className={`loading ${usersIsLoading ? 'active' : ''}`} />
 								)}
 							</div>
@@ -200,7 +148,7 @@ export default function UsersPage() {
 						<div className="block info-per-day">
 							<div className="block__header">Информация за <span>{moment().format('DD.MM.YYYY')}</span></div>
 							<div className="block__content">
-								{!dayInfoIsLoading && activeUserId.current !== null && dayComesInfo.length > 1 && (
+								{!dayInfoIsLoading && activeUserIdRef.current !== null && dayComesInfo.length > 1 && (
 									<Chart
 										chartType="Timeline"
 										chartLanguage='ru'
@@ -218,10 +166,10 @@ export default function UsersPage() {
 										}}
 									/>
 								)}
-								{!dayInfoIsLoading && activeUserId.current !== null && dayComesInfo.length <= 1 && (
+								{!dayInfoIsLoading && activeUserIdRef.current !== null && dayComesInfo.length <= 1 && (
 									'Нет информации'
 								)}
-								{dayInfoIsLoading && activeUserId.current !== null && (
+								{dayInfoIsLoading && activeUserIdRef.current !== null && (
 									<img src={loadingIcon} alt="" className={`loading ${usersIsLoading ? 'active' : ''}`} />
 								)}
 							</div>
@@ -231,7 +179,7 @@ export default function UsersPage() {
 
 				<div className="users-page__properties">
 					<div className="title">Список студентов</div>
-					{/* <UsersBlock /> */}
+					<UsersBlock onClickUser={onClickUser} activeUserIdRef={activeUserIdRef} />
 				</div>
 			</div >
 		</>

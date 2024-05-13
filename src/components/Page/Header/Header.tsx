@@ -1,22 +1,22 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './header.scss'
-import arrowDown from '/src/assets/arrow.svg'
-import { logOut } from '../func/fetch';
-import useAuth from '../../hooks/useAuth';
+import arrowDown from '@images/arrow.svg'
+import useAuth from '@hooks/useAuth';
+import { request } from '@utils/request';
 
 function Header() {
 	const location = useLocation()
 	const userName = localStorage.getItem('user-info')
 	const { setIsAuth } = useAuth()
 
-	function onClickDetailsBtn(evt) {
-		evt.target.closest('.profile').classList.toggle('active')
+	function onClickDetailsBtn(event: MouseEvent) {
+		const target = event.target as HTMLButtonElement
+		target.closest('.profile')!.classList.toggle('active')
 	}
 
 	function onClickExitBtn() {
 		localStorage.removeItem('user-info')
-		logOut()
+		request('/logout', 'post')
 			.then(_ => setIsAuth(false))
 	}
 
@@ -29,7 +29,7 @@ function Header() {
 				<Link to='/keys' className={`menu__item ${location.pathname === '/keys' ? 'active' : ''}`}><span>Ключи</span></Link>
 			</div>
 			<div className='profile'>
-				<button onClick={onClickDetailsBtn} className="profile__open-btn">
+				<button onClick={onClickDetailsBtn as any} className="profile__open-btn">
 					<div className="profile__name">{userName}</div>
 					<img src={arrowDown} alt="" className="profile__details" />
 				</button>

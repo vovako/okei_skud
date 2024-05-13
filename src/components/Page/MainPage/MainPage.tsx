@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import './main-page.scss'
 import Header from '../Header/Header';
 import Chart from 'react-google-charts';
@@ -6,22 +6,30 @@ import moment from 'moment'
 import 'moment/dist/locale/ru.js';
 moment.locale('ru');
 
-function MainPage({ eventsList, enterCount, exitCount, anomaliesIn, anomaliesOut }) {
+interface IMainPage {
+	eventsList: any[],
+	enterCount: number,
+	exitCount: number,
+	anomaliesIn: number,
+	anomaliesOut: number
+}
 
-	function updateComesChart(enterCount, exitCount) {
+function MainPage({ eventsList, enterCount, exitCount, anomaliesIn, anomaliesOut }: IMainPage) {
+
+	function updateComesChart(enterCount: number, exitCount: number) {
 		if (location.pathname !== '/') return
 
-		const enterBar = document.querySelector('.enter-count-circle-bar')
-		enterBar.style.setProperty('--progress-value', enterCount)
-		enterBar.style.setProperty('--max-value', enterCount + exitCount)
+		const enterBar = document.querySelector('.enter-count-circle-bar') as HTMLElement
+		enterBar.style.setProperty('--progress-value', enterCount.toString())
+		enterBar.style.setProperty('--max-value', (enterCount + exitCount).toString())
 
-		const exitBar = document.querySelector('.exit-count-circle-bar')
-		exitBar.style.setProperty('--progress-value', exitCount)
-		exitBar.style.setProperty('--max-value', enterCount + exitCount)
+		const exitBar = document.querySelector('.exit-count-circle-bar') as HTMLElement
+		exitBar.style.setProperty('--progress-value', exitCount.toString())
+		exitBar.style.setProperty('--max-value', (enterCount + exitCount).toString())
 
-		const innerBar = document.querySelector('.in-count-circle-bar')
-		innerBar.style.setProperty('--progress-value', enterCount - exitCount)
-		innerBar.style.setProperty('--max-value', enterCount + exitCount)
+		const innerBar = document.querySelector('.in-count-circle-bar') as HTMLElement
+		innerBar.style.setProperty('--progress-value', (enterCount - exitCount).toString())
+		innerBar.style.setProperty('--max-value', (enterCount + exitCount).toString())
 	}
 
 	useEffect(() => {
