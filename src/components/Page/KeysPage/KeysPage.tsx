@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import useUsers from '@/hooks/useUsers';
 import useGroups from '@/hooks/useGroups';
 import kppScheme from '@images/kpp.png'
+import loadingIcon from '@images/loading.gif'
 
 function KeysPage() {
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
@@ -13,6 +14,7 @@ function KeysPage() {
 	const [bindingState, setBindingState] = useState<'disabled' | 'ready' | 'read' | 'completed'>('disabled')
 	const { users, usersIsLoading } = useUsers()
 	const { groups } = useGroups()
+	const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
 
 
 	function onClickUser(id: number) {
@@ -54,7 +56,7 @@ function KeysPage() {
 					<div className='wrapper'>
 						<div className="block keys-info-block">
 							<div className="block__header">Информация</div>
-							<div className="block__content">
+							<div className={`block__content ${selectedUserId !== null && !usersIsLoading ? 'active' : ''}`}>
 								<div className="keys-info-block__descr">
 									<div className="keys-info-block__text">Группа: <span>2020пк1</span></div>
 									<div className="keys-info-block__text">Номер карты: <span>anjdfsjreigdskfjd-342sdjkldsf2340</span></div>
@@ -72,6 +74,12 @@ function KeysPage() {
 										<button onClick={saveBinding} className="btn">Сохранить</button>
 									)}
 								</div>
+								{usersIsLoading && selectedUserId !== null && (
+									<img src={loadingIcon} alt="" className='loading active' />
+								)}
+								{selectedUserId === null && (
+									<div className="block__notice">Студент не выбран</div>
+								)}
 							</div>
 						</div>
 						<div className="block reader-select-block">

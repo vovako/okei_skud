@@ -27,7 +27,6 @@ export default function UsersPage() {
 	const { groups } = useGroups()
 
 
-
 	function onClickUser(id: number) {
 		activeUserIdRef.current = id
 		const user = users.filter((u) => u.Id === id)[0]
@@ -57,10 +56,6 @@ export default function UsersPage() {
 
 		onSelectDate(moment())
 	}
-
-
-
-
 
 	function loadComesPerMonth(date: moment.Moment, userId: number) {
 		return new Promise((resolve) => {
