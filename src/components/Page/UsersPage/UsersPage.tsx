@@ -23,7 +23,7 @@ export default function UsersPage() {
 
 	const activeUserIdRef = useRef<number | null>(null)
 	const selectedDate = useRef(moment())
-	const { users, addUsers, usersIsLoading, setUsersIsLoading } = useUsers()
+	const { users, usersIsLoading } = useUsers()
 	const { groups } = useGroups()
 
 

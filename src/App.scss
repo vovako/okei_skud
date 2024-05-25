@@ -32,6 +32,10 @@ body {
 		background-color: var(--color6);
 		color: black;
 	}
+	&_gray {
+		background-color: var(--color2);
+		color: black;
+	}
 }
 .link-btn {
 	font-size: 1.8rem;

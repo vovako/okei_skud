@@ -29,7 +29,6 @@ function LoginPage() {
 			.then((data: any) => {
 				localStorage.setItem('user-info', data.Username)
 				setIsAuth(true)
-				console.log(data)
 			})
 			.catch(err => {
 				setNotice(err)

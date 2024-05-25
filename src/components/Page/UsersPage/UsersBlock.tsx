@@ -60,7 +60,6 @@ const UsersBlock = ({ onClickUser, activeUserIdRef }: IUsersBlock) => {
 			<div className="block users-block">
 				<div className="block__content">
 					<div className="users-search-row">
-
 						<search className="users-search-row__search">
 							<input type="search" placeholder='Поиск по фамилии'
 								value={searchValue}
