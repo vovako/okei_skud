@@ -1,7 +1,7 @@
 export const origin = 'http://127.0.0.1:8082'
 export const wsorigin = 'ws://127.0.0.1:8082'
 
-export const request = (url: string, method = 'get', body: any = null) => {
+export const request = (url: string, method = 'get', body: any = null, custromErrorHandler = false) => {
 
 	const options: RequestInit = {
 		method,
@@ -20,7 +20,9 @@ export const request = (url: string, method = 'get', body: any = null) => {
 			.then(resp => resp.json())
 			.then(json => {
 				if (json.error) {
-					onFetchError(json.error)
+					if (!custromErrorHandler) {
+						onFetchError(json.error)
+					}
 					reject(json.error)
 				} else {
 					resolve(json.data)

@@ -15,7 +15,7 @@ export const GroupContext = createContext({} as IGroupContext)
 interface IGroupProvider {
 	children: ReactElement
 }
-export const GroupdProvider: FC<IGroupProvider> = ({ children }) => {
+export const GroupProvider: FC<IGroupProvider> = ({ children }) => {
 	const { isAuth } = useAuth()
 	const [groups, setGroups] = useState<Igroup[]>([])
 

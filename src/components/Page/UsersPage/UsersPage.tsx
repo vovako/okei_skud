@@ -1,5 +1,5 @@
 import './users-page.scss'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import MonthChart from '../../MonthChart/MonthChart'
 import Chart from 'react-google-charts'
 import moment from 'moment'
@@ -25,7 +25,6 @@ export default function UsersPage() {
 	const selectedDate = useRef(moment())
 	const { users, usersIsLoading } = useUsers()
 	const { groups } = useGroups()
-
 
 	function onClickUser(id: number) {
 		activeUserIdRef.current = id
@@ -118,6 +117,13 @@ export default function UsersPage() {
 				setDayInfoIsLoading(false)
 			})
 	}
+
+	useEffect(() => {
+		if (!dayInfoIsLoading && activeUserIdRef.current !== null && dayComesInfo.length > 1) {
+
+			console.log(dayComesInfo)
+		}
+	}, [dayInfoIsLoading, dayComesInfo])
 
 	return (
 		<>

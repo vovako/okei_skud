@@ -14,7 +14,7 @@ const UsersBlock = ({ onClickUser, activeUserIdRef }: IUsersBlock) => {
 	const [filterCount, setFilterCount] = useState(0)
 	const [filteredList, setFilteredList] = useState<number[]>([])
 	const [searchValue, setSearchValue] = useState('')
-	const { users, usersIsLoading, addUsers } = useUsers()
+	const { users, usersIsLoading, addUsers, setUsersIsLoading } = useUsers()
 
 	const searchTimeout = useRef<number>()
 
@@ -27,10 +27,12 @@ const UsersBlock = ({ onClickUser, activeUserIdRef }: IUsersBlock) => {
 			const params = [
 				`LastName=${target.value}`
 			]
+			setUsersIsLoading(true)
 			loadUsers(0, 100, params)
 				.then(newUsers => {
 					addUsers(newUsers)
 					setFilterCount(0)
+					setUsersIsLoading(false)
 				})
 
 		}, 400)

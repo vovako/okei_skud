@@ -1,5 +1,5 @@
 import useGroups from '@/hooks/useGroups';
-import { loadUsers, addUser, Iuser } from '@/hooks/useUsers';
+import useUsers, { loadUsers, addUser, Iuser } from '@/hooks/useUsers';
 import { ReactElement, useState } from 'react';
 
 interface IPopup {
@@ -31,8 +31,9 @@ export function PopupAddUser() {
 	function onClickAddUserBtn(evt: MouseEvent) {
 		const target = evt.target as HTMLElement
 		const statusEl = target.closest('.popup')!.querySelector('.popup__action-status') as HTMLElement
-		statusEl.classList.remove('failed')
-		statusEl.classList.remove('success')
+		statusEl.classList.remove('failed', 'success')
+
+		if (!(firstname && surname && lastname && groupId)) return;
 
 		addUser(firstname, surname, lastname, groupId)
 			.then(_ => {
@@ -91,6 +92,7 @@ interface IPopupFilter {
 }
 export function PopupFilter({ setFilterCount, filterCount, setFilteredList }: IPopupFilter) {
 	const { groups } = useGroups()
+	const { addUsers } = useUsers()
 
 	const [surname, setSurname] = useState('')
 	const [firstname, setFirstname] = useState('')
@@ -112,6 +114,7 @@ export function PopupFilter({ setFilterCount, filterCount, setFilteredList }: IP
 		loadUsers(0, filterCount > 0 ? 100 : 30, opts)
 			.then(data => {
 				const newUser = data as Iuser[]
+				addUsers(data)
 				setFilteredList(data !== null ? newUser.map(u => u.Id) : [])
 			})
 		setFilterCount(filterCount)

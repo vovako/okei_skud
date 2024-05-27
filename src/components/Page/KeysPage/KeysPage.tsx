@@ -6,29 +6,46 @@ import useUsers from '@/hooks/useUsers';
 import useGroups from '@/hooks/useGroups';
 import kppScheme from '@images/kpp.png'
 import loadingIcon from '@images/loading.gif'
+import { request } from '@/utils/request';
 
 function KeysPage() {
 	const [selectedUserTitle, setSelectedUserTitle] = useState('не выбран')
 	const activeUserIdRef = useRef<number | null>(null)
 	const [activeReader, setActiveReader] = useState<number | null>(null)
-	const [bindingState, setBindingState] = useState<'disabled' | 'ready' | 'read' | 'completed'>('disabled')
+	const [bindingState, setBindingState] = useState<'disabled' | 'ready' | 'read' | 'completed' | 'failed'>('disabled')
 	const { users, usersIsLoading } = useUsers()
 	const { groups } = useGroups()
 	const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
-
+	const [groupInfo, setGroupInfo] = useState('')
+	const [schemeNotice, setSchemeNotice] = useState('')
+	const codeRef = useRef<number | null>(null)
 
 	function onClickUser(id: number) {
 		activeUserIdRef.current = id
 		const user = users.filter((u) => u.Id === id)[0]
-		const groupName = groups.filter((g) => g.Id === user.DepartmentId)[0]?.Name ?? 'Без группы'
-		setSelectedUserTitle(`${user.LastName} ${user.FirstName} ${user.MiddleName} ${groupName}`)
+		setSelectedUserTitle(`${user.LastName} ${user.FirstName} ${user.MiddleName}`)
+
+		setSelectedUserId(user.Id)
+		let userGroup = groups.filter(g => g.Id === user.DepartmentId)[0]?.Name ?? ''
+		if (userGroup === '') {
+			userGroup = 'Без группы'
+		}
+		setGroupInfo(userGroup)
 	}
 
 	function onSelectReader(num: number) {
 		setActiveReader(num)
-		setTimeout(() => {
-			setBindingState('completed')
-		}, 1000)
+
+		request(`/api/cards/read_card_number/${num}`, 'get', null, true)
+			.then(code => {
+				console.log(code)
+				codeRef.current = code as number
+				setBindingState('completed')
+			})
+			.catch(msg => {
+				setSchemeNotice(msg)
+				setBindingState('failed')
+			})
 	}
 
 	function onClickBinding() {
@@ -41,10 +58,19 @@ function KeysPage() {
 	function shemeReset() {
 		setActiveReader(null)
 		setBindingState('disabled')
+		setSchemeNotice('')
 	}
 
 	function saveBinding() {
-		shemeReset()
+		const body = {
+			PersonId: selectedUserId,
+			Code: codeRef.current!
+		}
+		request(`/api/cards`, 'post', body)
+			.then(res => {
+				console.log(res)
+				shemeReset()
+			})
 	}
 
 	return (
@@ -52,16 +78,14 @@ function KeysPage() {
 			<Header />
 			<div className="users-page">
 				<div className="users-page__body">
-					<div className="title">Студент <span>{selectedUserTitle}</span></div>
+					<div className="title">Привязка карты доступа</div>
 					<div className='wrapper'>
 						<div className="block keys-info-block">
 							<div className="block__header">Информация</div>
 							<div className={`block__content ${selectedUserId !== null && !usersIsLoading ? 'active' : ''}`}>
 								<div className="keys-info-block__descr">
-									<div className="keys-info-block__text">Группа: <span>2020пк1</span></div>
-									<div className="keys-info-block__text">Номер карты: <span>anjdfsjreigdskfjd-342sdjkldsf2340</span></div>
-									<div className="keys-info-block__text">Начало срока действия ключа: <span>11.02.2020</span></div>
-									<div className="keys-info-block__text">Конец срока действия ключа: <span>11.02.2030</span></div>
+									<div className="keys-info-block__text">Студент <span>{selectedUserTitle}</span></div>
+									<div className="keys-info-block__text">Группа: <span>{groupInfo}</span></div>
 								</div>
 								<div className="keys-info-block__actions">
 									{bindingState !== 'disabled' && (
@@ -85,6 +109,7 @@ function KeysPage() {
 						<div className="block reader-select-block">
 							<div className="block__header">Выбор считывателя для записи</div>
 							<div className="block__content">
+								<div className="reader-layout-notice">{schemeNotice}</div>
 								<div className={`reader-layout ${bindingState}`}>
 									<img src={kppScheme} alt="" className="reader-layout__img" />
 									{[1, 2, 3, 4].map((num) => (

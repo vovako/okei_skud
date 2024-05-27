@@ -30,7 +30,7 @@ export const UsersdProvider: FC<IUsersProvider> = ({ children }) => {
 			newData = []
 		}
 		const uniqueData = newData.filter(nd => [...users].filter(ul => ul.Id === nd.Id).length < 1)
-		setUsers([...users, ...uniqueData])
+		setUsers([...uniqueData, ...users])
 	}
 
 	useEffect(() => {
@@ -58,8 +58,8 @@ const useUsers = () => {
 export default useUsers
 
 export function loadUsers(start: number, count: number, filterProps: string[] = []) {
-
 	return new Promise((resolve: (value: Iuser[]) => void, reject) => {
+		
 		request(`/api/persons/filter/${start}/${count}`, 'post', filterProps)
 			.then(usersData => {
 				const data = (usersData ?? []) as Iuser[]
@@ -68,6 +68,7 @@ export function loadUsers(start: number, count: number, filterProps: string[] = 
 			.catch(err => reject(err))
 	})
 }
+
 export function addUser(firstname: string, surname: string, lastname: string, groupId: number) {
 
 	return new Promise((resolve: (value: Iuser[]) => void, reject) => {
