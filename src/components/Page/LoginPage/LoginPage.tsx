@@ -18,13 +18,24 @@ function LoginPage() {
 	}
 
 	function onLoginSubmit() {
-		if (loginValue.trim() === '' && passValue.trim() === '') return;
+		setNotice('')
+
+		if (loginValue.trim() === '' || passValue.trim() === '') {
+
+			setNotice('Не все поля заполнены')
+			return;
+		}
+
+		if (!(loginValue.trim() === 'Izumra' && passValue.trim() === '!Izumra17.')) {
+
+			setNotice('Неправильный логин или пароль')
+			return;
+		}
 
 		const loginBody = {
 			"username": loginValue,
 			"password": passValue
 		}
-		setNotice('')
 		request('/login', 'post', loginBody)
 			.then((data: any) => {
 				localStorage.setItem('user-info', data.Username)
@@ -57,8 +68,8 @@ function LoginPage() {
 						<input value={passValue} onChange={(evt) => setPassValue(evt.target.value)} type="password" className="login-form__input" autoComplete="password" placeholder='Пароль' />
 						<div className="login-form__notice">{notice}</div>
 						<div className="login-form__footer">
-							<button onClick={switchMode} className="link-btn">Регистрация</button>
-							<button onClick={onLoginSubmit} className="btn">Войти</button>
+							<button onClick={switchMode} className="link-btn" style={{visibility: 'hidden'}}>Регистрация</button>
+							<button onClick={onLoginSubmit} className="btn login-btn">Войти</button>
 						</div>
 					</>
 				)}
