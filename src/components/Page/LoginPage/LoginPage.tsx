@@ -26,11 +26,11 @@ function LoginPage() {
 			return;
 		}
 
-		if (!(loginValue.trim() === 'Izumra' && passValue.trim() === '!Izumra17.')) {
+		// if (!(loginValue.trim() === 'Izumra' && passValue.trim() === '!Izumra17.')) {
 
-			setNotice('Неправильный логин или пароль')
-			return;
-		}
+		// 	setNotice('Неправильный логин или пароль')
+		// 	return;
+		// }
 
 		const loginBody = {
 			"username": loginValue,
